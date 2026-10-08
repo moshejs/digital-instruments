@@ -1,0 +1,8 @@
+/* Self-hosted typefaces (bundled at build time; no third-party font requests).
+   fontsource's export map appends ".css", so the specifiers omit it. */
+@import '@fontsource/big-shoulders-display/700';
+@import '@fontsource/big-shoulders-display/800';
+@import '@fontsource/ibm-plex-sans/400';
+@import '@fontsource/ibm-plex-sans/600';
+@import '@fontsource/ibm-plex-mono/400';
+@import '@fontsource/ibm-plex-mono/500';

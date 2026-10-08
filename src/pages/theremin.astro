@@ -1,0 +1,128 @@
+---
+import Base from '../layouts/Base.astro';
+import '../styles/theremin.css';
+import { instrumentBySlug, instrumentJsonLd } from '../data/instruments';
+import { SITE, withBase } from '../lib/site';
+
+const inst = instrumentBySlug('theremin');
+const url = new URL(Astro.url.pathname, Astro.site).href;
+const image = new URL(withBase('og/theremin.png'), Astro.site).href;
+const breadcrumbs = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: SITE.name, item: new URL(withBase(), Astro.site).href },
+    { '@type': 'ListItem', position: 2, name: inst.name, item: url },
+  ],
+};
+---
+
+<Base
+  title={`Aetherwave — Play a Theremin Online | ${SITE.name}`}
+  description={inst.description}
+  image="og/theremin.png"
+  imageAlt="A glowing cyan oscilloscope waveform between two brass theremin antennas in the dark."
+  keywords={inst.keywords}
+  jsonLd={[instrumentJsonLd(inst, url, image), breadcrumbs]}
+  themeColor="#08080f"
+  favicon="favicon-theremin.svg"
+>
+  <div class="shell">
+    <header class="top">
+      <div class="brand">
+        <div class="eyebrow">{inst.catalogNo} · Léon Theremin, 1920</div>
+        <h1 class="title">Aether<span>wave</span></h1>
+        <p class="tag">The instrument you play <b>without touching it</b>. Move through the field — right for pitch, up for volume — or tilt your phone and hear it sing.</p>
+      </div>
+      <div class="readout-top" aria-live="off">
+        <div class="hz" id="hzTop">— Hz</div>
+        <div class="nm" id="noteTop">silent</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="stage" aria-label="Theremin play field">
+        <div class="field-wrap" id="field">
+          <canvas id="scope" aria-hidden="true"></canvas>
+          <div class="ruler" id="ruler" aria-hidden="true"></div>
+          <div class="antenna vol" aria-hidden="true"><span class="glow"></span></div>
+          <div class="antenna pitch" aria-hidden="true"><span class="glow"></span></div>
+          <div class="rings" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="cross h" id="crossH"></div>
+          <div class="cross v" id="crossV"></div>
+          <div class="target" id="target"><span class="band"></span><span class="lab" id="targetLab"></span></div>
+          <div class="cursor" id="cursor"></div>
+          <div class="cursor-read" id="cursorRead"></div>
+          <div class="tiltind" id="tiltind" aria-hidden="true"><span class="bub" id="tiltbub"></span></div>
+          <div class="power" id="power" role="button" tabindex="0" aria-label="Power on the theremin">
+            <div class="btn-power">
+              <span class="ring">⏻</span>
+              <span class="plabel">Power On</span>
+              <span class="psub">Warm up the valves, then glide your cursor across the field — no clicking needed. On a phone, drag — or turn on tilt.</span>
+            </div>
+          </div>
+        </div>
+        <div class="field-foot">
+          <span id="hintPointer">← low <span class="k">pitch</span> high →&nbsp;&nbsp;·&nbsp;&nbsp;↓ soft <span class="k">volume</span> loud ↑</span>
+          <span id="hintTilt" hidden>rotate → <span class="k">pitch</span>&nbsp;·&nbsp;tilt → <span class="k">volume</span>&nbsp;·&nbsp;shake → vibrato</span>
+          <button class="tilt-toggle" id="tiltToggle" type="button" aria-pressed="false" hidden><span class="led"></span><span id="tiltLabel">Tilt to play</span></button>
+          <span class="badge"><i class="c"></i>you&nbsp;&nbsp;<i class="v"></i>signal&nbsp;&nbsp;<i class="t"></i>on&nbsp;target</span>
+        </div>
+        <noscript><p class="field-foot">The theremin needs JavaScript to make sound.</p></noscript>
+      </section>
+
+      <aside class="panel">
+        <div class="card">
+          <h2><span class="dot"></span>Song Library</h2>
+          <div class="songs" id="songList"></div>
+        </div>
+
+        <div class="card player" id="player">
+          <div class="phead"><span class="ptitle" id="pTitle">Pick a song</span><span class="pmeta" id="pMeta"></span></div>
+          <p class="pdesc" id="pDesc">Choose a tune to hear the theremin play it — then follow the moving target to play it yourself.</p>
+          <div class="transport">
+            <button class="btn primary" id="btnListen" type="button" disabled><span class="ic">▶</span>Listen</button>
+            <button class="btn guide" id="btnGuide" type="button" disabled><span class="ic">◎</span>Play Along</button>
+            <button class="btn" id="btnStop" type="button" disabled><span class="ic">■</span>Stop</button>
+            <button class="btn" id="btnHint" type="button" disabled><span class="ic">♪</span>Hint</button>
+          </div>
+          <div class="progress"><i id="progFill"></i></div>
+          <div class="guide-now idle" id="guideNow" aria-live="polite">
+            <div class="big" id="gnNote">—</div>
+            <div class="meta"><div class="lyr" id="gnLyric">Ready when you are</div><div class="cnt" id="gnCount">—</div></div>
+          </div>
+          <div class="strip-wrap"><div class="playhead"></div><div class="strip" id="strip"></div></div>
+          <div class="feedback info" id="feedback" aria-live="polite">Tip: <b>Listen</b> first to hear the glide, then <b>Play Along</b> — keep your cursor inside the glowing band.</div>
+        </div>
+
+        <div class="card">
+          <h2><span class="dot"></span>Voice</h2>
+          <div class="ctrls">
+            <div class="row"><label for="glide">Glide (portamento)</label><input type="range" id="glide" min="0" max="100" value="24" /><span class="val" id="glideV">medium</span></div>
+            <div class="row"><label for="vibRate">Vibrato rate</label><input type="range" id="vibRate" min="0" max="90" value="55" /><span class="val" id="vibRateV">5.5 Hz</span></div>
+            <div class="row"><label for="vibDepth">Vibrato depth</label><input type="range" id="vibDepth" min="0" max="80" value="22" /><span class="val" id="vibDepthV">22 ¢</span></div>
+            <div class="row"><label for="timbre">Timbre</label><input type="range" id="timbre" min="0" max="100" value="42" /><span class="val" id="timbreV">voice</span></div>
+            <div class="row"><label for="reverb">Space (reverb)</label><input type="range" id="reverb" min="0" max="100" value="34" /><span class="val" id="reverbV">34%</span></div>
+            <div class="row"><label for="scale">Scale assist</label>
+              <select id="scale">
+                <option value="off" selected>Off — true glide</option>
+                <option value="chromatic">Chromatic</option>
+                <option value="major">C Major</option>
+                <option value="pentatonic">C Pentatonic</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="foot">
+      One continuous voice, <b>synthesized live</b> with the Web Audio API. All melodies are <b>public-domain / traditional</b>.
+      <br /><a href={withBase('steelpan/')}>← Also in the catalogue: the steelpan</a>
+    </footer>
+  </div>
+</Base>
+
+<script>
+  import '../scripts/theremin.ts';
+</script>

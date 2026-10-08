@@ -1,0 +1,39 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE, withBase } from '../lib/site';
+---
+
+<Base
+  title={`Off the scale — ${SITE.name}`}
+  description="This page doesn't exist. Head back to the steelpan or the theremin."
+  image="og/home.png"
+  imageAlt={SITE.name}
+  noindex
+>
+  <main class="lost">
+    <p class="code">404 · off the scale</p>
+    <h1>That note isn't on this instrument.</h1>
+    <p>The page you're looking for doesn't exist. Pick an instrument instead:</p>
+    <div class="links">
+      <a href={withBase('steelpan/')} class="pan">Steelpan →</a>
+      <a href={withBase('theremin/')} class="wave">Theremin →</a>
+      <a href={withBase()}>All instruments</a>
+    </div>
+  </main>
+</Base>
+
+<style is:global>
+  html, body { margin: 0; background: #121110; color: #edeae3; font-family: 'IBM Plex Sans', system-ui, sans-serif; }
+</style>
+
+<style>
+  .lost { max-width: 760px; margin: 0 auto; padding: clamp(60px, 14vh, 140px) clamp(16px, 4vw, 34px); }
+  .code { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase; color: #a8a39a; margin: 0 0 18px; }
+  h1 { margin: 0 0 16px; font-family: 'Big Shoulders Display', sans-serif; font-weight: 800; text-transform: uppercase; font-size: clamp(44px, 9vw, 96px); line-height: 0.9; text-wrap: balance; }
+  p { color: #a8a39a; line-height: 1.6; }
+  .links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+  .links a { font-family: 'IBM Plex Mono', monospace; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; text-decoration: none; color: #edeae3; border: 1px solid rgba(237, 234, 227, 0.2); padding: 10px 14px; border-radius: 4px; }
+  .links a.pan:hover { border-color: #f6b23c; color: #f6b23c; }
+  .links a.wave:hover { border-color: #5cf2d6; color: #5cf2d6; }
+  .links a:focus-visible { outline: 2px solid #5cf2d6; outline-offset: 2px; }
+</style>
