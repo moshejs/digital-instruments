@@ -1,0 +1,20 @@
+---
+import { INSTRUMENTS, type Instrument } from '../data/instruments';
+import { withBase } from '../lib/site';
+
+interface Props {
+  slug: Instrument['slug'];
+}
+const i = INSTRUMENTS.findIndex((inst) => inst.slug === Astro.props.slug);
+const prev = INSTRUMENTS[(i - 1 + INSTRUMENTS.length) % INSTRUMENTS.length];
+const next = INSTRUMENTS[(i + 1) % INSTRUMENTS.length];
+---
+
+<footer class="foot">
+  <p><slot /></p>
+  <nav class="cat-nav" aria-label="More instruments">
+    <a href={withBase(`${prev.slug}/`)}>← {prev.catalogNo} {prev.name}</a>
+    <a href={withBase()}>All instruments</a>
+    <a href={withBase(`${next.slug}/`)}>{next.catalogNo} {next.name} →</a>
+  </nav>
+</footer>

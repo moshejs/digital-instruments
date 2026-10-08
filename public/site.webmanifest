@@ -1,22 +1,96 @@
 {
   "name": "Moshe's Digital Instruments",
   "short_name": "Instruments",
-  "description": "A steelpan and a theremin, synthesized live in your browser.",
+  "description": "Five instruments — steelpan, theremin, kalimba, glass harp and lever harp — synthesized live in your browser.",
   "start_url": "/digital-instruments/",
   "scope": "/digital-instruments/",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#121110",
   "theme_color": "#121110",
-  "categories": ["music", "education", "entertainment"],
+  "categories": [
+    "music",
+    "education",
+    "entertainment"
+  ],
   "icons": [
-    { "src": "/digital-instruments/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/digital-instruments/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "/digital-instruments/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "/digital-instruments/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+    {
+      "src": "/digital-instruments/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/digital-instruments/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/digital-instruments/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/digital-instruments/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
   ],
   "shortcuts": [
-    { "name": "Steelpan", "url": "/digital-instruments/steelpan/", "icons": [{ "src": "/digital-instruments/favicon-steelpan.svg", "sizes": "any" }] },
-    { "name": "Theremin", "url": "/digital-instruments/theremin/", "icons": [{ "src": "/digital-instruments/favicon-theremin.svg", "sizes": "any" }] }
+    {
+      "name": "Steelpan",
+      "url": "/digital-instruments/steelpan/",
+      "icons": [
+        {
+          "src": "/digital-instruments/favicon-steelpan.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Theremin",
+      "url": "/digital-instruments/theremin/",
+      "icons": [
+        {
+          "src": "/digital-instruments/favicon-theremin.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Kalimba",
+      "url": "/digital-instruments/kalimba/",
+      "icons": [
+        {
+          "src": "/digital-instruments/favicon-kalimba.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Glass Harp",
+      "url": "/digital-instruments/glass-harp/",
+      "icons": [
+        {
+          "src": "/digital-instruments/favicon-glass-harp.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Lever Harp",
+      "url": "/digital-instruments/harp/",
+      "icons": [
+        {
+          "src": "/digital-instruments/favicon-harp.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
   ]
 }

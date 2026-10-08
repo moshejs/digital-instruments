@@ -1,10 +1,10 @@
 ---
 import { SITE, withBase } from '../lib/site';
+import { INSTRUMENTS } from '../data/instruments';
 
 const path = Astro.url.pathname;
 const links = [
-  { href: withBase('steelpan/'), label: 'Steelpan' },
-  { href: withBase('theremin/'), label: 'Theremin' },
+  ...INSTRUMENTS.map((i) => ({ href: withBase(`${i.slug}/`), label: i.short })),
   { href: `${withBase()}#songbook`, label: 'Songbook' },
 ];
 ---
@@ -59,7 +59,9 @@ const links = [
   }
   ul {
     display: flex;
-    gap: clamp(10px, 2.4vw, 24px);
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px clamp(10px, 1.8vw, 22px);
     list-style: none;
     margin: 0;
     padding: 0;

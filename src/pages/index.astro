@@ -1,13 +1,24 @@
 ---
 import Base from '../layouts/Base.astro';
 import { INSTRUMENTS, fullName } from '../data/instruments';
-import { SONGS, playableCount } from '../data/songs';
+import { SONGS, findSong } from '../data/songs';
+import { unavailableReason } from '../data/availability';
 import { buildPads } from '../lib/steelpan-layout';
+import { buildTines } from '../lib/kalimba-layout';
+import { buildGlasses } from '../lib/glass-layout';
+import { HARP_STRINGS, leverPreset, pitchOf, stringGeometry } from '../lib/harp';
+import { REST, midiToName } from '../lib/music';
 import { SITE, withBase } from '../lib/site';
 
 const home = new URL(withBase(), Astro.site).href;
 const pads = buildPads();
-const [steelpan, theremin] = INSTRUMENTS;
+const tines = buildTines();
+const glasses = buildGlasses();
+
+// the mini harp sounds Scarborough Fair, so tune its strings the way that song needs
+const scarborough = findSong('scarborough-fair')!;
+const harpLevers = leverPreset(scarborough.notes.filter((n) => n.note !== REST).map((n) => n.note));
+const harpStrings = HARP_STRINGS.map((s, i) => ({ ...stringGeometry(i), colour: s.colour, note: midiToName(pitchOf(i, harpLevers[i])) }));
 
 const jsonLd = [
   {
@@ -34,80 +45,98 @@ const jsonLd = [
 ---
 
 <Base
-  title={`${SITE.name} — Steelpan & Theremin in Your Browser`}
+  title={`${SITE.name} — Five Instruments to Play in Your Browser`}
   description={SITE.description}
   image="og/home.png"
-  imageAlt="Moshe's Digital Instruments: a chrome steelpan and a glowing theremin waveform side by side."
-  keywords={['online instruments', 'browser instruments', 'virtual steel drum', 'online theremin', 'Web Audio API', 'learn music', 'play along', 'public domain songs']}
+  imageAlt="Moshe's Digital Instruments: a steelpan, a theremin waveform, a kalimba, glasses and harp strings."
+  keywords={['online instruments', 'browser instruments', 'virtual steel drum', 'online theremin', 'online kalimba', 'glass harp', 'online harp', 'Web Audio API', 'learn music', 'play along', 'public domain songs']}
   jsonLd={jsonLd}
 >
   <main class="home">
     <header class="hero">
-      <p class="eyebrow">Workshop catalogue · {new Date().getFullYear()}</p>
+      <p class="eyebrow">Workshop catalogue · {new Date().getFullYear()} · five instruments</p>
       <h1>
         <span class="owner">Moshe's</span>
         <span class="word">Digital Instruments</span>
       </h1>
       <div class="signal" aria-hidden="true"></div>
       <p class="lede">
-        Real instruments, synthesized note by note in your browser. No samples, no installs —
-        click, hover, or tilt your phone, and learn nine songs with a guide that lights the way.
+        Real instruments, synthesized note by note in your browser. Strike, hover, tap, rub or strum —
+        no samples, no installs — and learn nine songs with a guide that lights the way.
       </p>
     </header>
 
     <section class="catalogue" aria-label="Instruments">
-      <article class="plate plate-pan">
-        <a class="plate-link" href={withBase('steelpan/')} aria-label={steelpan.cta}></a>
-        <div class="plate-head">
-          <span class="no">{steelpan.catalogNo}</span>
-          <h2>{steelpan.name}</h2>
-        </div>
-        <div class="visual pan-visual" aria-hidden="true">
-          <div class="mini-pan" data-mini-pan>
-            {pads.map((p) => (
-              <span
-                class="mini-pad"
-                data-note={p.note}
-                style={`left:${p.x}%;top:${p.y}%;width:${p.w}%;height:${p.h}%`}
-              />
-            ))}
+      {INSTRUMENTS.map((inst) => (
+        <article class={`plate plate-${inst.slug}`} style={`--plate-accent:${inst.accent}`}>
+          <a class="plate-link" href={withBase(`${inst.slug}/`)} aria-label={inst.cta}></a>
+          <div class="plate-head">
+            <span class="no">{inst.catalogNo}</span>
+            <h2>
+              {inst.name}
+              {inst.displayName !== inst.name && <em>“{inst.displayName}”</em>}
+            </h2>
           </div>
-        </div>
-        <p class="tagline">{steelpan.tagline}</p>
-        <dl class="specs">
-          {steelpan.specs.map(([k, v]) => (<div><dt>{k}</dt><dd>{v}</dd></div>))}
-        </dl>
-        <span class="cta">{steelpan.cta} <span aria-hidden="true">→</span></span>
-      </article>
 
-      <article class="plate plate-wave">
-        <a class="plate-link" href={withBase('theremin/')} aria-label={theremin.cta}></a>
-        <div class="plate-head">
-          <span class="no">{theremin.catalogNo}</span>
-          <h2>{theremin.name} <em>“{theremin.displayName}”</em></h2>
-        </div>
-        <div class="visual wave-visual" aria-hidden="true">
-          <span class="ant ant-loop"></span>
-          <span class="ant ant-rod"></span>
-          <canvas data-mini-scope></canvas>
-        </div>
-        <p class="tagline">{theremin.tagline}</p>
-        <dl class="specs">
-          {theremin.specs.map(([k, v]) => (<div><dt>{k}</dt><dd>{v}</dd></div>))}
-        </dl>
-        <span class="cta">{theremin.cta} <span aria-hidden="true">→</span></span>
-      </article>
+          <div class={`visual v-${inst.slug}`} aria-hidden="true">
+            {inst.slug === 'steelpan' && (
+              <div class="mini-pan" data-mini-song="ode-to-joy">
+                {pads.map((p) => <span class="mini-pad" data-note={p.note} style={`left:${p.x}%;top:${p.y}%;width:${p.w}%;height:${p.h}%`} />)}
+              </div>
+            )}
+            {inst.slug === 'theremin' && (
+              <>
+                <span class="ant ant-loop"></span>
+                <span class="ant ant-rod"></span>
+                <canvas data-mini-scope></canvas>
+              </>
+            )}
+            {inst.slug === 'kalimba' && (
+              <div class="mini-kalimba" data-mini-song="twinkle-twinkle">
+                <span class="mk-bridge"></span>
+                <span class="mk-hole"></span>
+                {tines.map((t) => <span class="mk-tine" data-note={t.note} style={`--slot:${t.slot};--len:${t.length}`} />)}
+              </div>
+            )}
+            {inst.slug === 'glass-harp' && (
+              <div class="mini-glasses" data-mini-song="amazing-grace">
+                {glasses.map((g) => <span class={`mg ${g.row}`} data-note={g.note} style={`--x:${g.x}%;--water:${g.water}`}><i /></span>)}
+              </div>
+            )}
+            {inst.slug === 'harp' && (
+              <svg class="mini-harp" viewBox="60 60 920 680" data-mini-song="scarborough-fair">
+                <path d="M150 70 L150 700" class="mh-pillar" />
+                <path d={`M150 ${harpStrings[0].top - 14} Q 560 120 930 ${harpStrings[14].top - 10}`} class="mh-neck" />
+                <path d={`M160 ${harpStrings[0].bottom + 8} L940 ${harpStrings[14].bottom + 2}`} class="mh-board" />
+                {harpStrings.map((s) => <line x1={s.x} x2={s.x} y1={s.top} y2={s.bottom} class={`mh-str ${s.colour}`} data-note={s.note} />)}
+              </svg>
+            )}
+          </div>
+
+          <p class="tagline">{inst.tagline}</p>
+          <dl class="specs">
+            {inst.specs.map(([k, v]) => (<div><dt>{k}</dt><dd>{v}</dd></div>))}
+          </dl>
+          <span class="cta">{inst.cta} <span aria-hidden="true">→</span></span>
+        </article>
+      ))}
     </section>
 
     <section class="songbook" id="songbook" aria-labelledby="songbook-title">
       <div class="section-head">
         <h2 id="songbook-title">The Songbook</h2>
-        <p>Nine public-domain melodies, playable on both instruments. Each was transcribed, then re-derived note by note by an independent second pass that corrected mistakes before they shipped.</p>
+        <p>Nine public-domain melodies. Each was transcribed, then re-derived note by note by an independent second pass that corrected mistakes before they shipped. Every song plays on every instrument that has its notes — the C-major kalimba sits out the ones with sharps and flats.</p>
       </div>
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th scope="col">Song</th><th scope="col">Origin</th><th scope="col">Key</th><th scope="col">Time</th><th scope="col">Notes</th><th scope="col">Level</th><th scope="col"><span class="sr">Play on</span></th></tr>
+            <tr>
+              <th scope="col">Song</th>
+              <th scope="col">Origin</th>
+              <th scope="col">Key</th>
+              <th scope="col">Level</th>
+              <th scope="col">Play on</th>
+            </tr>
           </thead>
           <tbody>
             {SONGS.map((s) => (
@@ -115,12 +144,14 @@ const jsonLd = [
                 <th scope="row">{s.title}</th>
                 <td class="muted">{s.origin}</td>
                 <td>{s.key}</td>
-                <td class="num">{s.timeSignature}</td>
-                <td class="num">{playableCount(s)}</td>
                 <td><span class={`level ${s.difficulty.toLowerCase()}`}>{s.difficulty}</span></td>
                 <td class="play">
-                  <a href={`${withBase('steelpan/')}?song=${s.id}`} class="go go-pan">Steelpan</a>
-                  <a href={`${withBase('theremin/')}?song=${s.id}`} class="go go-wave">Theremin</a>
+                  {INSTRUMENTS.map((inst) => {
+                    const reason = unavailableReason(inst.slug, s);
+                    return reason
+                      ? <span class="go na" title={`${inst.name}: ${reason}`}>{inst.short}</span>
+                      : <a class="go" style={`--go:${inst.accent}`} href={`${withBase(`${inst.slug}/`)}?song=${s.id}`}>{inst.short}</a>;
+                  })}
                 </td>
               </tr>
             ))}
@@ -134,15 +165,15 @@ const jsonLd = [
       <div class="notes">
         <div>
           <h3>Synthesized, not sampled</h3>
-          <p>The steelpan stacks seven tuned partials — a hand-detuned octave and twelfth over a fast metallic ping — on a filtered-noise strike. The theremin is one continuous voice: two oscillators crossfaded for timbre, a vibrato LFO and portamento glide.</p>
+          <p>Each instrument uses the physics of the real thing: tuned partials over a metallic strike for the pan, cantilever-beam modes for kalimba tines, friction-driven glass modes, Karplus–Strong for harp strings, and one gliding oscillator voice for the theremin.</p>
         </div>
         <div>
           <h3>Learn by following the light</h3>
-          <p><b>Listen</b> plays the tune for you. <b>Play Along</b> lights the next pad on the steelpan, or sweeps a target band across the theremin field and scores how long you stay on pitch.</p>
+          <p><b>Listen</b> plays the tune for you. <b>Play Along</b> lights the next pad, tine, glass or string — or sweeps a target across the theremin field and scores how long you stay on pitch.</p>
         </div>
         <div>
           <h3>Played with your body</h3>
-          <p>Strike pads with a click, a tap or a piano-style keyboard. On a phone, the theremin reads your gyroscope and accelerometer: roll for pitch, tilt for volume, shake for vibrato.</p>
+          <p>Strike the pan, hover over the theremin (or tilt your phone), tap or sweep the kalimba tines, circle the glass rims with as many fingers as you like, and drag across the harp for a glissando.</p>
         </div>
       </div>
     </section>
@@ -183,127 +214,135 @@ const jsonLd = [
     --brass: #d8a24a;
     --display: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
     --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
-    max-width: 1240px;
+    max-width: 1280px;
     margin: 0 auto;
     padding: 0 clamp(16px, 3vw, 34px);
   }
 
   /* ── hero ── */
   .hero { padding: clamp(40px, 8vw, 96px) 0 clamp(28px, 5vw, 56px); }
-  .eyebrow {
-    margin: 0 0 18px;
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: var(--ink-2);
-  }
+  .eyebrow { margin: 0 0 18px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ink-2); }
   h1 { margin: 0; font-family: var(--display); text-transform: uppercase; line-height: 0.86; text-wrap: balance; }
   h1 .owner { display: block; font-weight: 700; font-size: clamp(22px, 3.4vw, 40px); letter-spacing: 0.18em; color: var(--ink-2); }
   h1 .word { display: block; font-weight: 800; font-size: clamp(54px, 12.5vw, 168px); letter-spacing: 0.01em; }
   .signal {
-    height: 3px;
-    width: min(100%, 760px);
-    margin: clamp(18px, 3vw, 28px) 0;
-    border-radius: 3px;
-    background: linear-gradient(90deg, var(--amber), var(--teal) 45%, var(--cyan) 70%, var(--magenta));
-    box-shadow: 0 0 18px rgba(92, 242, 214, 0.35);
-    transform-origin: left;
-    animation: draw 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) both 0.15s;
+    height: 3px; width: min(100%, 760px); margin: clamp(18px, 3vw, 28px) 0; border-radius: 3px;
+    background: linear-gradient(90deg, #f6b23c, #ff8a4c 22%, #f3cf86 40%, #5cf2d6 62%, #b8a6ff 82%, #ff5db0);
+    box-shadow: 0 0 18px rgba(92, 242, 214, 0.3);
+    transform-origin: left; animation: draw 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) both 0.15s;
   }
   @keyframes draw { from { transform: scaleX(0); } }
-  .lede { margin: 0; max-width: 60ch; font-size: clamp(16px, 1.6vw, 19px); line-height: 1.6; color: var(--ink-2); }
+  .lede { margin: 0; max-width: 62ch; font-size: clamp(16px, 1.6vw, 19px); line-height: 1.6; color: var(--ink-2); }
 
   /* ── catalogue plates ── */
-  .catalogue { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(16px, 2.4vw, 28px); }
-  @media (max-width: 860px) { .catalogue { grid-template-columns: 1fr; } }
+  /* five plates: three across, then two wider ones, so the grid has no holes */
+  .catalogue { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: clamp(14px, 2vw, 24px); }
+  .plate { grid-column: span 2; }
+  .plate:nth-child(n + 4) { grid-column: span 3; }
+  @media (max-width: 1100px) {
+    .catalogue { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .plate, .plate:nth-child(n + 4) { grid-column: span 1; }
+    .plate:last-child { grid-column: span 2; }
+  }
+  @media (max-width: 700px) {
+    .catalogue { grid-template-columns: 1fr; }
+    .plate:last-child { grid-column: span 1; }
+  }
   .plate {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    padding: clamp(18px, 2.6vw, 30px);
-    background: var(--plate);
-    border: 1px solid var(--rule);
-    border-radius: 6px;
+    position: relative; display: flex; flex-direction: column; gap: 16px;
+    padding: clamp(16px, 2vw, 24px); background: var(--plate); border: 1px solid var(--rule); border-radius: 6px;
     transition: border-color 0.2s, transform 0.2s;
   }
-  .plate:hover { transform: translateY(-2px); }
-  .plate-pan:hover { border-color: rgba(246, 178, 60, 0.5); }
-  .plate-wave:hover { border-color: rgba(92, 242, 214, 0.5); }
+  .plate:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--plate-accent) 55%, transparent); }
   .plate-link { position: absolute; inset: 0; z-index: 2; border-radius: inherit; }
-  .plate-link:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+  .plate-link:focus-visible { outline: 2px solid var(--plate-accent); outline-offset: 3px; }
   .plate-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-  .plate-head h2 { margin: 0; font-family: var(--display); font-weight: 800; font-size: clamp(34px, 4.6vw, 54px); text-transform: uppercase; line-height: 0.9; }
-  .plate-head h2 em { font-style: normal; font-weight: 700; font-size: 0.5em; letter-spacing: 0.06em; color: var(--cyan); }
-  .no { order: 2; font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; color: var(--ink-3); }
-  .tagline { margin: 0; font-size: 16px; line-height: 1.55; color: var(--ink); max-width: 46ch; }
+  .plate-head h2 { margin: 0; font-family: var(--display); font-weight: 800; font-size: clamp(30px, 3.4vw, 44px); text-transform: uppercase; line-height: 0.9; }
+  .plate-head h2 em { display: block; font-style: normal; font-weight: 700; font-size: 0.48em; letter-spacing: 0.06em; color: var(--plate-accent); margin-top: 4px; }
+  .no { order: 2; font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; color: var(--ink-3); white-space: nowrap; }
+  .tagline { margin: 0; font-size: 15px; line-height: 1.55; color: var(--ink); }
+  .cta { margin-top: auto; font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--plate-accent); }
 
-  .visual { position: relative; aspect-ratio: 16 / 10; border-radius: 4px; overflow: hidden; }
-  .pan-visual { display: grid; place-items: center; background: radial-gradient(70% 70% at 50% 40%, rgba(246, 178, 60, 0.14), transparent 70%), #0b1315; }
-  .mini-pan {
-    position: relative;
-    height: 88%;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background: radial-gradient(circle at 50% 34%, #cfdadd, #5b666b 46%, #2c3539 74%, #161d20);
-    box-shadow: inset 0 3px 6px rgba(255, 255, 255, 0.28), inset 0 -14px 30px rgba(0, 0, 0, 0.6), 0 20px 40px -14px rgba(0, 0, 0, 0.7);
-  }
-  .mini-pan::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: radial-gradient(46% 30% at 34% 20%, rgba(255, 255, 255, 0.4), transparent 70%);
-    pointer-events: none;
-  }
-  .mini-pad {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    background: radial-gradient(circle at 42% 30%, #f2f7f8, #cfdadd 30%, #5b666b 72%, #2c3539);
-    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.5), inset 0 -3px 6px rgba(0, 0, 0, 0.45);
-    transition: box-shadow 0.25s, filter 0.25s;
-  }
+  .visual { position: relative; aspect-ratio: 16 / 10; max-height: 300px; border-radius: 4px; overflow: hidden; display: grid; place-items: center; }
+
+  /* steelpan */
+  .v-steelpan { background: radial-gradient(70% 70% at 50% 40%, rgba(246, 178, 60, 0.14), transparent 70%), #0b1315; }
+  .mini-pan { position: relative; height: 88%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 50% 34%, #cfdadd, #5b666b 46%, #2c3539 74%, #161d20); box-shadow: inset 0 3px 6px rgba(255, 255, 255, 0.28), inset 0 -14px 30px rgba(0, 0, 0, 0.6), 0 20px 40px -14px rgba(0, 0, 0, 0.7); }
+  .mini-pan::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(46% 30% at 34% 20%, rgba(255, 255, 255, 0.4), transparent 70%); pointer-events: none; }
+  .mini-pad { position: absolute; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle at 42% 30%, #f2f7f8, #cfdadd 30%, #5b666b 72%, #2c3539); box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.5), inset 0 -3px 6px rgba(0, 0, 0, 0.45); transition: box-shadow 0.25s, filter 0.25s; }
   .mini-pad.on { filter: brightness(1.2); box-shadow: inset 0 0 0 1px var(--amber), 0 0 16px rgba(246, 178, 60, 0.8); }
 
-  .wave-visual { background: radial-gradient(90% 90% at 50% 120%, #0a1620, transparent 60%), #07070d; }
-  .wave-visual canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  /* theremin */
+  .v-theremin { background: radial-gradient(90% 90% at 50% 120%, #0a1620, transparent 60%), #07070d; }
+  .v-theremin canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
   .ant { position: absolute; z-index: 1; }
   .ant-rod { right: 7%; top: 12%; bottom: 12%; width: 2px; background: linear-gradient(180deg, var(--brass), #8a6a2f); box-shadow: 0 0 10px rgba(216, 162, 74, 0.5); }
   .ant-loop { left: 6%; top: 50%; width: 9%; aspect-ratio: 0.62; transform: translateY(-50%); border: 2px solid #8a6a2f; border-radius: 50%; }
 
-  .specs { margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0; border-top: 1px solid var(--rule); }
-  .specs div { padding: 10px 0; border-bottom: 1px solid var(--rule); }
-  .specs dt { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); }
-  .specs dd { margin: 3px 0 0; font-family: var(--mono); font-size: 13px; color: var(--ink); }
-  .cta { margin-top: auto; font-family: var(--mono); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
-  .plate-pan .cta { color: var(--amber); }
-  .plate-wave .cta { color: var(--cyan); }
+  /* kalimba */
+  .v-kalimba { background: radial-gradient(70% 70% at 50% 30%, rgba(255, 138, 76, 0.16), transparent 70%), #16100c; }
+  .mini-kalimba {
+    position: relative; height: 86%; aspect-ratio: 1.12;
+    border-radius: 18px 18px 46% 46% / 18px 18px 26% 26%;
+    background: repeating-linear-gradient(91deg, rgba(90, 45, 15, 0.13) 0 1.5px, transparent 1.5px 6px), linear-gradient(180deg, #d9a066, #b97a3f 55%, #8a5426);
+    box-shadow: inset 0 2px 0 rgba(255, 235, 200, 0.45), 0 18px 30px -12px rgba(0, 0, 0, 0.7);
+  }
+  .mk-bridge { position: absolute; left: 7%; right: 7%; top: 13%; height: 3.4%; border-radius: 4px; background: linear-gradient(180deg, #f5dfa5, #b98c3a 55%, #7c5a1e); z-index: 2; }
+  .mk-hole { position: absolute; left: 50%; top: 80%; width: 15%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: #120a04; }
+  .mk-tine {
+    position: absolute; top: 8%; left: calc(7% + var(--slot) * (86% / 17) + 86% / 17 * 0.16); width: calc(86% / 17 * 0.68); height: calc(var(--len) * 57%);
+    border-radius: 2px 2px 40% 40% / 2px 2px 12% 12%; background: linear-gradient(90deg, #8e979c, #f4f7f8 40%, #6f777b);
+    transition: box-shadow 0.2s, filter 0.2s;
+  }
+  .mk-tine.on { filter: brightness(1.15); box-shadow: 0 8px 16px -2px rgba(255, 138, 76, 0.95); }
+
+  /* glass harp */
+  .v-glass-harp { background: radial-gradient(70% 70% at 50% 0%, rgba(184, 166, 255, 0.2), transparent 70%), linear-gradient(180deg, #161a35, #0b0d1e); }
+  .mini-glasses { position: absolute; inset: 0; }
+  .mg { position: absolute; left: var(--x); transform: translateX(-50%); width: 5.2%; aspect-ratio: 0.42; }
+  .mg.front { bottom: 14%; }
+  .mg.back { bottom: 50%; width: 4.2%; opacity: 0.85; }
+  .mg i { position: absolute; inset: 0 0 42% 0; border: 1px solid rgba(220, 230, 255, 0.45); border-radius: 8% 8% 50% 50% / 4% 4% 56% 56%; overflow: hidden; background: rgba(255, 255, 255, 0.05); transition: box-shadow 0.25s, border-color 0.25s; }
+  .mg i::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--water) * 100%); background: rgba(140, 190, 255, 0.45); }
+  .mg::after { content: ''; position: absolute; left: 46%; width: 8%; top: 58%; bottom: 0; background: rgba(255, 255, 255, 0.3); }
+  .mg.on i { border-color: #fff; box-shadow: 0 0 14px 3px rgba(184, 166, 255, 0.85); }
+
+  /* harp */
+  .v-harp { background: radial-gradient(70% 70% at 60% 20%, rgba(243, 207, 134, 0.14), transparent 70%), #140b0e; }
+  .mini-harp { width: 96%; height: 96%; }
+  .mh-pillar, .mh-neck { fill: none; stroke: #7a4429; stroke-width: 26; stroke-linecap: round; }
+  .mh-board { fill: none; stroke: #c99b62; stroke-width: 22; stroke-linecap: round; }
+  .mh-str { stroke: #e9d8ab; stroke-width: 3; transition: stroke 0.2s, filter 0.2s; }
+  .mh-str.c { stroke: #e0503f; }
+  .mh-str.f { stroke: #7896f2; }
+  .mh-str.on { stroke: #ffe4ad; stroke-width: 5; filter: drop-shadow(0 0 6px #f3cf86); }
+
+  .specs { margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); border-top: 1px solid var(--rule); }
+  .specs div { padding: 9px 0; border-bottom: 1px solid var(--rule); }
+  .specs dt { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); }
+  .specs dd { margin: 3px 0 0; font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
 
   /* ── songbook ── */
   .songbook, .workshop { padding-top: clamp(56px, 8vw, 96px); }
-  .section-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 24px; align-items: end; margin-bottom: 22px; }
+  .section-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 24px; align-items: end; margin-bottom: 22px; }
   @media (max-width: 760px) { .section-head { grid-template-columns: 1fr; } }
   .section-head h2, .section-title { margin: 0; font-family: var(--display); font-weight: 800; font-size: clamp(36px, 5vw, 64px); text-transform: uppercase; line-height: 0.9; }
-  .section-head p { margin: 0; color: var(--ink-2); line-height: 1.6; max-width: 62ch; }
+  .section-head p { margin: 0; color: var(--ink-2); line-height: 1.6; max-width: 66ch; }
   .table-wrap { overflow-x: auto; border-top: 1px solid var(--rule); }
-  table { width: 100%; border-collapse: collapse; min-width: 760px; font-size: 14.5px; }
-  th, td { text-align: left; padding: 13px 12px 13px 0; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+  table { width: 100%; border-collapse: collapse; min-width: 900px; font-size: 14.5px; }
+  th, td { text-align: left; padding: 12px 12px 12px 0; border-bottom: 1px solid var(--rule); vertical-align: middle; }
   thead th { font-family: var(--mono); font-weight: 400; font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); }
   tbody th { font-weight: 600; }
   .muted { color: var(--ink-2); }
-  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
   .level { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid; }
   .level.easy { color: #57d98a; }
   .level.medium { color: var(--amber); }
   .level.hard { color: var(--magenta); }
-  .play { white-space: nowrap; text-align: right; padding-right: 0; }
-  .go { font-family: var(--mono); font-size: 12px; text-decoration: none; padding: 5px 9px; border-radius: 4px; border: 1px solid var(--rule); color: var(--ink); margin-left: 6px; transition: border-color 0.15s, color 0.15s; }
-  .go-pan:hover { border-color: var(--amber); color: var(--amber); }
-  .go-wave:hover { border-color: var(--cyan); color: var(--cyan); }
-  .go:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
-  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .play { white-space: nowrap; padding-right: 0; }
+  .go { display: inline-block; font-family: var(--mono); font-size: 11.5px; text-decoration: none; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--rule); color: var(--ink); margin: 2px 4px 2px 0; transition: border-color 0.15s, color 0.15s; }
+  a.go:hover { border-color: var(--go); color: var(--go); }
+  a.go:focus-visible { outline: 2px solid var(--go); outline-offset: 2px; }
+  .go.na { color: var(--ink-3); border-style: dashed; text-decoration: line-through; cursor: help; }
 
   /* ── workshop notes ── */
   .notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(18px, 3vw, 40px); margin-top: 26px; border-top: 1px solid var(--rule); padding-top: 22px; }
@@ -313,17 +352,9 @@ const jsonLd = [
   .notes b { color: var(--ink); font-weight: 600; }
 
   .site-foot {
-    max-width: 1240px;
-    margin: clamp(64px, 9vw, 110px) auto 0;
-    padding: 22px clamp(16px, 3vw, 34px) 34px;
-    border-top: 1px solid rgba(237, 234, 227, 0.12);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px 26px;
-    justify-content: space-between;
-    font-family: 'IBM Plex Mono', ui-monospace, monospace;
-    font-size: 12px;
-    color: #6e6a63;
+    max-width: 1280px; margin: clamp(64px, 9vw, 110px) auto 0; padding: 22px clamp(16px, 3vw, 34px) 34px;
+    border-top: 1px solid rgba(237, 234, 227, 0.12); display: flex; flex-wrap: wrap; gap: 10px 26px; justify-content: space-between;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #6e6a63;
   }
   .site-foot a { color: #a8a39a; }
   .site-foot a:hover { color: #edeae3; }
@@ -340,27 +371,30 @@ const jsonLd = [
 
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /** The mini pan silently "plays" Ode to Joy, lighting each pad in time. */
-  function animatePan(): void {
-    const pan = document.querySelector<HTMLElement>('[data-mini-pan]');
-    const song = SONGS.find((s) => s.id === 'ode-to-joy');
-    if (!pan || !song) return;
-    const pads = new Map([...pan.querySelectorAll<HTMLElement>('.mini-pad')].map((p) => [p.dataset.note!, p]));
-    if (still) {
-      pads.get('E4')?.classList.add('on');
-      return;
-    }
-    const beatMs = 60000 / 92;
-    let i = 0;
-    const step = () => {
-      const n = song.notes[i % song.notes.length];
-      const pad = n.note === REST ? undefined : pads.get(n.note);
-      pad?.classList.add('on');
-      window.setTimeout(() => pad?.classList.remove('on'), Math.min(n.beats * beatMs * 0.8, 420));
-      i++;
-      window.setTimeout(step, n.beats * beatMs + (i % song.notes.length === 0 ? 1600 : 0));
-    };
-    step();
+  /** Each miniature silently "plays" its song, lighting the matching pad, tine, glass or string. */
+  function animateMinis(): void {
+    document.querySelectorAll<HTMLElement | SVGElement>('[data-mini-song]').forEach((mini, k) => {
+      const song = SONGS.find((s) => s.id === mini.dataset.miniSong);
+      if (!song) return;
+      const parts = new Map<string, Element>();
+      mini.querySelectorAll<HTMLElement | SVGElement>('[data-note]').forEach((p) => parts.set(p.dataset.note!, p));
+      const firstNote = song.notes.find((n) => n.note !== REST)!.note;
+      if (still) {
+        parts.get(firstNote)?.classList.add('on');
+        return;
+      }
+      const beatMs = 60000 / (song.tempo * 0.92);
+      let i = 0;
+      const step = () => {
+        const n = song.notes[i % song.notes.length];
+        const part = n.note === REST ? undefined : parts.get(n.note);
+        part?.classList.add('on');
+        window.setTimeout(() => part?.classList.remove('on'), Math.min(n.beats * beatMs * 0.8, 450));
+        i++;
+        window.setTimeout(step, n.beats * beatMs + (i % song.notes.length === 0 ? 1800 : 0));
+      };
+      window.setTimeout(step, 300 * k); // stagger so the catalogue doesn't move in lockstep
+    });
   }
 
   /** A miniature oscilloscope whose pitch glides through Greensleeves. */
@@ -386,11 +420,11 @@ const jsonLd = [
     const draw = (t: number) => {
       if (t >= nextAt) {
         const n = notes[index % notes.length];
-        target = 2 + (noteToFreq(n.note) / 220) * 2.2; // wave density follows the melody
+        target = 2 + (noteToFreq(n.note) / 220) * 2.2;
         nextAt = t + n.beats * 520;
         index++;
       }
-      cycles += (target - cycles) * 0.06; // portamento
+      cycles += (target - cycles) * 0.06;
       phase += 0.05;
       const w = canvas.clientWidth;
       const h = canvas.clientHeight;
@@ -420,6 +454,6 @@ const jsonLd = [
     requestAnimationFrame(draw);
   }
 
-  animatePan();
+  animateMinis();
   animateScope();
 </script>

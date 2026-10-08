@@ -1,0 +1,103 @@
+/* GLASS HARP — midnight velvet, crystal, candlelight. Violet = singing, gold = play next. */
+:root {
+  --bg: #0a0d16;
+  --bg-2: #0f1424;
+  --panel: rgba(196, 214, 255, 0.04);
+  --panel-2: rgba(196, 214, 255, 0.075);
+  --line: rgba(190, 210, 255, 0.13);
+  --line-2: rgba(190, 210, 255, 0.24);
+  --ink: #eef2ff;
+  --ink-dim: #a3b0cc;
+  --ink-faint: #67738f;
+  --accent: #b8a6ff;
+  --accent-2: #d9cfff;
+  --accent-ink: #160f36;
+  --guide: #ffd27a;
+  --guide-2: #ffe7b3;
+  --guide-ink: #2e1f00;
+  --page-bg:
+    radial-gradient(70% 50% at 50% -5%, rgba(184, 166, 255, 0.12), transparent 60%),
+    radial-gradient(60% 50% at 0% 100%, rgba(255, 210, 122, 0.05), transparent 60%),
+    #0a0d16;
+}
+
+h1.title {
+  background: linear-gradient(100deg, #ffffff 10%, #d9cfff 40%, #a9d8ff 65%, #ffffff 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 18px rgba(184, 166, 255, 0.3));
+}
+
+/* ---------- the table ---------- */
+.table {
+  position: relative; width: 100%; aspect-ratio: 2.05; border-radius: 14px; overflow: hidden;
+  touch-action: none; user-select: none;
+  background:
+    radial-gradient(60% 70% at 50% 0%, rgba(184, 166, 255, 0.16), transparent 70%),
+    radial-gradient(100% 60% at 50% 110%, rgba(0, 0, 0, 0.6), transparent 70%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.012) 0 2px, transparent 2px 5px),
+    linear-gradient(180deg, #161a35, #0d1024 70%, #090b19);
+  border: 1px solid var(--line);
+}
+.table::after { /* the table edge */
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 7%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.35));
+  border-top: 1px solid rgba(255, 255, 255, 0.07); pointer-events: none;
+}
+
+.glass {
+  --level: 0;
+  position: absolute; left: var(--x); transform: translateX(-50%);
+  aspect-ratio: 0.4; padding: 0; border: 0; background: none; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; touch-action: none;
+}
+.glass.front { width: 5.4%; bottom: 9%; z-index: 2; }
+.glass.back { width: 4.4%; bottom: 43%; z-index: 1; filter: brightness(0.85); }
+.glass:focus-visible { outline: 2px solid var(--guide); outline-offset: 4px; border-radius: 6px; }
+
+.glass .bowl {
+  position: absolute; left: 0; right: 0; top: 0; height: 58%; overflow: hidden;
+  border-radius: 8% 8% 50% 50% / 4% 4% 56% 56%;
+  border: 1px solid rgba(220, 230, 255, 0.38);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.04) 30%, rgba(255, 255, 255, 0.02) 62%, rgba(255, 255, 255, 0.16));
+  transition: box-shadow 0.12s, border-color 0.12s;
+}
+.glass .water {
+  position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--water) * 100%);
+  background: linear-gradient(180deg, rgba(160, 205, 255, 0.5), rgba(95, 140, 235, 0.42));
+  border-top: 1px solid rgba(225, 240, 255, 0.85);
+}
+.glass .ripple {
+  position: absolute; left: 8%; right: 8%; bottom: calc(var(--water) * 100% - 2px); height: 4px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.95), transparent);
+  opacity: 0; transform: scaleX(0.4);
+}
+.glass .shine { position: absolute; top: 6%; left: 14%; width: 12%; height: 70%; border-radius: 40%; background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent); }
+.glass .rim {
+  position: absolute; left: -1px; right: -1px; top: -2%; height: 5%; border-radius: 50%;
+  border: 1px solid rgba(240, 245, 255, 0.75); background: rgba(255, 255, 255, 0.04);
+  transition: box-shadow 0.12s;
+}
+.glass .stem { position: absolute; top: 57%; left: 46%; width: 8%; height: 34%; background: linear-gradient(90deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.08)); border-radius: 2px; }
+.glass .foot { position: absolute; bottom: 0; left: 12%; right: 12%; height: 7%; border-radius: 50%; border: 1px solid rgba(220, 230, 255, 0.4); background: rgba(255, 255, 255, 0.07); }
+.glass .lbl {
+  position: absolute; left: 50%; top: 100%; transform: translate(-50%, 6px); white-space: nowrap;
+  font-family: var(--font-mono); font-size: clamp(8px, 1.15vw, 11px); color: var(--ink-dim); opacity: 0; transition: opacity 0.2s;
+}
+body.show-names .glass .lbl { opacity: 1; }
+.glass.back .lbl { top: auto; bottom: 100%; transform: translate(-50%, -6px); color: var(--ink-faint); }
+
+/* singing: everything scales with how hard you're rubbing (--level, 0…1) */
+.glass.sing .rim { box-shadow: 0 0 calc(4px + 22px * var(--level)) calc(1px + 3px * var(--level)) rgba(184, 166, 255, calc(0.35 + 0.65 * var(--level))); border-color: #fff; }
+.glass.sing .bowl { box-shadow: inset 0 0 calc(6px + 16px * var(--level)) rgba(184, 166, 255, calc(0.2 + 0.5 * var(--level))); border-color: var(--accent-2); }
+.glass.sing .ripple { opacity: calc(0.3 + 0.7 * var(--level)); animation: shimmer 0.16s linear infinite; }
+@keyframes shimmer { 0% { transform: scaleX(0.55); } 50% { transform: scaleX(0.95); } 100% { transform: scaleX(0.55); } }
+
+.glass.target .rim { box-shadow: 0 0 0 2px var(--guide), 0 0 22px 4px color-mix(in srgb, var(--guide) 65%, transparent); border-color: var(--guide-2); animation: candle 1.2s ease-in-out infinite; }
+.glass.target .lbl { opacity: 1; color: var(--guide); }
+@keyframes candle { 50% { box-shadow: 0 0 0 3px var(--guide-2), 0 0 32px 8px color-mix(in srgb, var(--guide) 80%, transparent); } }
+.glass.wrong { animation: wobble 0.35s; }
+@keyframes wobble { 25% { transform: translateX(calc(-50% - 3px)); } 75% { transform: translateX(calc(-50% + 3px)); } }
+
+.rub-hint { position: absolute; left: 50%; top: 6%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(217, 207, 255, 0.55); pointer-events: none; white-space: nowrap; }

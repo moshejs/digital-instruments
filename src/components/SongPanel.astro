@@ -1,0 +1,63 @@
+---
+/**
+ * The song library + play-along card shared by the note-based instruments.
+ * Driven by src/scripts/shared/guide-player.ts (which relies on these ids).
+ * Extra rows go in the "controls" slot; legend entries in the "legend" slot.
+ */
+interface Props {
+  /** Shown before a song is picked. */
+  intro: string;
+  /** Initial tip under the note strip. */
+  tip?: string;
+}
+const { intro, tip = 'Listen first to hear it, then Play Along to learn it note by note.' } = Astro.props;
+---
+
+<aside class="panel">
+  <div class="card">
+    <h2><span class="dot"></span>Song Library</h2>
+    <div class="songs" id="songList"></div>
+  </div>
+
+  <div class="card player" id="player">
+    <div class="phead">
+      <span class="ptitle" id="pTitle">Pick a song</span>
+      <span class="pmeta" id="pMeta"></span>
+    </div>
+    <p class="pdesc" id="pDesc">{intro}</p>
+
+    <div class="transport">
+      <button class="btn primary" id="btnListen" type="button" disabled><span class="ic">▶</span>Listen</button>
+      <button class="btn guide" id="btnGuide" type="button" disabled><span class="ic">◎</span>Play Along</button>
+      <button class="btn" id="btnStop" type="button" disabled><span class="ic">■</span>Stop</button>
+      <button class="btn" id="btnHint" type="button" disabled><span class="ic">♪</span>Hint</button>
+    </div>
+
+    <div class="progress"><i id="progFill"></i></div>
+
+    <div class="guide-now idle" id="guideNow" aria-live="polite">
+      <div class="big" id="gnNote">—</div>
+      <div class="meta">
+        <div class="lyr" id="gnLyric">Ready when you are</div>
+        <div class="cnt" id="gnCount">—</div>
+      </div>
+    </div>
+
+    <div class="strip-wrap">
+      <div class="playhead"></div>
+      <div class="strip" id="strip"></div>
+    </div>
+
+    <div class="feedback info" id="feedback" aria-live="polite">Tip: {tip}</div>
+
+    <div class="ctrls">
+      <div class="row">
+        <label for="tempo">Tempo</label>
+        <input type="range" id="tempo" min="40" max="180" value="100" />
+        <span class="tempo-val" id="tempoVal">100 BPM</span>
+      </div>
+      <slot name="controls" />
+      <div class="legend"><slot name="legend" /></div>
+    </div>
+  </div>
+</aside>

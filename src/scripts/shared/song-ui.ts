@@ -17,25 +17,37 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, te
   return node;
 }
 
-/** Renders the library; returns a lookup so callers can mark the active song. */
+/**
+ * Renders the library; returns a lookup so callers can mark the active song.
+ * `unavailable` explains why a song can't be played here (it's shown disabled).
+ */
 export function renderSongList(
   host: HTMLElement,
   songs: Song[],
   onPick: (song: Song) => void,
+  unavailable: (song: Song) => string | null = () => null,
 ): Map<string, HTMLButtonElement> {
   host.replaceChildren();
   const buttons = new Map<string, HTMLButtonElement>();
-  for (const song of songs) {
-    const button = el('button', 'song');
+  const playable = songs.filter((s) => !unavailable(s));
+  const blocked = songs.filter((s) => unavailable(s));
+  for (const song of [...playable, ...blocked]) {
+    const reason = unavailable(song);
+    const button = el('button', reason ? 'song unavailable' : 'song');
     button.type = 'button';
     button.dataset.songId = song.id;
     const main = el('span', 'song-main');
     main.append(
       el('span', 'st', song.title),
-      el('span', 'ss', `${playableCount(song)} notes · ${song.tempo} BPM · ${song.key}`),
+      el('span', 'ss', reason ?? `${playableCount(song)} notes · ${song.tempo} BPM · ${song.key}`),
     );
     button.append(main, el('span', `chip ${song.difficulty}`, song.difficulty));
-    button.addEventListener('click', () => onPick(song));
+    if (reason) {
+      button.disabled = true;
+      button.title = reason;
+    } else {
+      button.addEventListener('click', () => onPick(song));
+    }
     buttons.set(song.id, button);
     host.append(button);
   }
@@ -105,3 +117,12 @@ export function setFeedback(node: HTMLElement, kind: 'good' | 'bad' | 'info', ..
 
 /** Bold inline text for feedback messages. */
 export const b = (text: string): HTMLElement => el('b', '', text);
+
+/** Pointer capture that never throws (it can, if the pointer was already released). */
+export function capture(el: Element, pointerId: number): void {
+  try {
+    el.setPointerCapture(pointerId);
+  } catch {
+    /* the gesture still works without capture */
+  }
+}

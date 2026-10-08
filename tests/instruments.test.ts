@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { SONGS, findSong, playableCount } from '../src/data/songs';
 import { REST, noteToMidi } from '../src/lib/music';
-import { buildPads, KEYMAP, NOTE_TO_KEY } from '../src/lib/steelpan-layout';
+import { buildPads } from '../src/lib/steelpan-layout';
+import { PIANO_KEYMAP as KEYMAP, invertKeymap } from '../src/lib/keyboard';
 import { FIELD_MAX_MIDI, FIELD_MIN_MIDI, freqToX, tiltToControl, xToFreq, yToVolume } from '../src/lib/theremin-field';
 
+const NOTE_TO_KEY = invertKeymap(KEYMAP);
 const pads = buildPads();
 const padNotes = new Set(pads.map((p) => p.note));
 

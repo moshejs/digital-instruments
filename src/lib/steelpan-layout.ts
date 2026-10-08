@@ -37,14 +37,3 @@ export function buildPads(): Pad[] {
   pads.push({ note: CENTER, ring: 'center', x: 50, y: 50, w: 12, h: 12 });
   return pads;
 }
-
-/** Piano-style computer keyboard: bottom row = lower octave, top row = upper octave. */
-export const KEYMAP: Record<string, string> = {
-  z: 'C4', s: 'C#4', x: 'D4', d: 'D#4', c: 'E4', v: 'F4', g: 'F#4', b: 'G4', h: 'G#4', n: 'A4', j: 'A#4', m: 'B4',
-  q: 'C5', '2': 'C#5', w: 'D5', '3': 'D#5', e: 'E5', r: 'F5', '5': 'F#5', t: 'G5', '6': 'G#5', y: 'A5', '7': 'A#5', u: 'B5',
-  i: 'C6',
-};
-
-export const NOTE_TO_KEY: Record<string, string> = Object.fromEntries(
-  Object.entries(KEYMAP).map(([key, note]) => [note, key]),
-);

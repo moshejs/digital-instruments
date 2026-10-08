@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import InstrumentFooter from '../components/InstrumentFooter.astro';
 import '../styles/theremin.css';
 import { instrumentBySlug, instrumentJsonLd } from '../data/instruments';
 import { SITE, withBase } from '../lib/site';
@@ -116,10 +117,9 @@ const breadcrumbs = {
       </aside>
     </div>
 
-    <footer class="foot">
+    <InstrumentFooter slug="theremin">
       One continuous voice, <b>synthesized live</b> with the Web Audio API. All melodies are <b>public-domain / traditional</b>.
-      <br /><a href={withBase('steelpan/')}>← Also in the catalogue: the steelpan</a>
-    </footer>
+    </InstrumentFooter>
   </div>
 </Base>
 

@@ -251,3 +251,9 @@ footer.foot b{ color:var(--ink-dim); font-weight:400; }
 footer.foot a{ color:var(--cyan-2); text-decoration:none; border-bottom:1px solid currentColor; display:inline-block; margin-top:8px; }
 footer.foot a:hover{ color:#fff; }
 footer.foot a:focus-visible{ outline:2px solid var(--cyan); outline-offset:3px; }
+
+footer.foot p{ margin:0 0 12px; }
+.cat-nav{ display:flex; justify-content:center; gap:10px 22px; flex-wrap:wrap; }
+.cat-nav a{ color:var(--ink-dim); text-decoration:none; border-bottom:1px solid var(--line-2); padding-bottom:2px; }
+.cat-nav a:focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
+.cat-nav a:hover{ color:var(--cyan-2); border-color:var(--cyan); }

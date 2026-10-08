@@ -6,6 +6,9 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import sharp from 'sharp';
 import { buildPads } from '../src/lib/steelpan-layout.ts';
+import { buildTines } from '../src/lib/kalimba-layout.ts';
+import { buildGlasses } from '../src/lib/glass-layout.ts';
+import { HARP_STRINGS, neckY, soundboardY, stringGeometry } from '../src/lib/harp.ts';
 
 const OUT = new URL('../public/', import.meta.url);
 const pads = buildPads();
@@ -136,7 +139,7 @@ const ogHome = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630
   <defs>
     <radialGradient id="a" cx="15%" cy="0%" r="70%"><stop offset="0" stop-color="#f6b23c" stop-opacity=".12"/><stop offset="1" stop-color="#f6b23c" stop-opacity="0"/></radialGradient>
     <radialGradient id="c" cx="95%" cy="10%" r="70%"><stop offset="0" stop-color="#5cf2d6" stop-opacity=".1"/><stop offset="1" stop-color="#5cf2d6" stop-opacity="0"/></radialGradient>
-    <linearGradient id="sig" x1="0" x2="1"><stop offset="0" stop-color="#f6b23c"/><stop offset=".45" stop-color="#2ad4c4"/><stop offset=".7" stop-color="#5cf2d6"/><stop offset="1" stop-color="#ff5db0"/></linearGradient>
+    <linearGradient id="sig" x1="0" x2="1"><stop offset="0" stop-color="#f6b23c"/><stop offset=".22" stop-color="#ff8a4c"/><stop offset=".4" stop-color="#f3cf86"/><stop offset=".62" stop-color="#5cf2d6"/><stop offset=".82" stop-color="#b8a6ff"/><stop offset="1" stop-color="#ff5db0"/></linearGradient>
     <clipPath id="screen"><rect x="840" y="80" width="300" height="200" rx="6"/></clipPath>
   </defs>
   <rect width="1200" height="630" fill="#121110"/><rect width="1200" height="630" fill="url(#a)"/><rect width="1200" height="630" fill="url(#c)"/>
@@ -145,13 +148,170 @@ const ogHome = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630
   <text x="64" y="312" font-family="${DISPLAY}" font-weight="800" font-size="124" fill="#edeae3">DIGITAL</text>
   <text x="64" y="424" font-family="${DISPLAY}" font-weight="800" font-size="124" fill="#edeae3">INSTRUMENTS</text>
   <rect x="72" y="452" width="640" height="5" rx="2.5" fill="url(#sig)"/>
-  <text x="72" y="508" font-family="${SANS}" font-size="26" fill="#a8a39a">A steelpan and a theremin, synthesized live in your browser.</text>
-  <text x="72" y="584" font-family="${MONO}" font-size="18" fill="#6e6a63">moshejs.github.io/digital-instruments</text>
+  <text x="72" y="506" font-family="${SANS}" font-size="26" fill="#a8a39a">Five instruments, synthesized live in your browser.</text>
+  <text x="72" y="552" font-family="${MONO}" font-size="17" letter-spacing="3"><tspan fill="#f6b23c">STEELPAN</tspan><tspan fill="#6e6a63"> · </tspan><tspan fill="#5cf2d6">THEREMIN</tspan><tspan fill="#6e6a63"> · </tspan><tspan fill="#ff8a4c">KALIMBA</tspan><tspan fill="#6e6a63"> · </tspan><tspan fill="#b8a6ff">GLASS HARP</tspan><tspan fill="#6e6a63"> · </tspan><tspan fill="#f3cf86">HARP</tspan></text>
+  <text x="72" y="596" font-family="${MONO}" font-size="18" fill="#6e6a63">moshejs.github.io/digital-instruments</text>
   <rect x="840" y="80" width="300" height="200" rx="6" fill="#07070d" stroke="rgba(237,234,227,.14)"/>
   <g clip-path="url(#screen)">${waveSvg(855, 1125, 180, 62, 4.2, 'h', 3)}</g>
   <rect x="1118" y="98" width="3" height="164" fill="#d8a24a"/>
   ${panSvg(990, 452, 128, ['E4', 'C5'], 'h')}
 </svg>`;
+
+/* ───────── kalimba, glasses, harp ───────── */
+
+/** A kalimba board of width w with its top-left at (x, y); lit tines glow ember. */
+function kalimbaSvg(x, y, w, lit = [], id = 'k') {
+  const h = w / 1.12;
+  const tines = buildTines();
+  const inner = w * 0.86;
+  const slot = inner / 17;
+  const tw = slot * 0.68;
+  const tine = (t) => {
+    const tx = x + w * 0.07 + t.slot * slot + slot * 0.16;
+    const ty = y + h * 0.08;
+    const th = t.length * h * 0.57;
+    const on = lit.includes(t.note);
+    return `${on ? `<rect x="${tx - tw}" y="${ty + th * 0.6}" width="${tw * 3}" height="${th * 0.5}" rx="${tw}" fill="#ff8a4c" opacity=".7" filter="url(#${id}glow)"/>` : ''}
+      <rect x="${tx}" y="${ty}" width="${tw}" height="${th}" rx="${tw * 0.45}" fill="url(#${id}steel)"/>`;
+  };
+  return `
+    <defs>
+      <linearGradient id="${id}wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2aa6e"/><stop offset=".55" stop-color="#b97a3f"/><stop offset="1" stop-color="#7f4c22"/></linearGradient>
+      <linearGradient id="${id}steel" x1="0" x2="1"><stop offset="0" stop-color="#8e979c"/><stop offset=".4" stop-color="#f4f7f8"/><stop offset="1" stop-color="#6f777b"/></linearGradient>
+      <linearGradient id="${id}brass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f5dfa5"/><stop offset="1" stop-color="#7c5a1e"/></linearGradient>
+      <pattern id="${id}grain" width="7" height="40" patternUnits="userSpaceOnUse"><rect width="1.6" height="40" fill="rgba(90,45,15,.16)"/></pattern>
+      <filter id="${id}glow" x="-100%" y="-50%" width="300%" height="200%"><feGaussianBlur stdDeviation="${w * 0.012}"/></filter>
+      <filter id="${id}shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="${w * 0.04}" stdDeviation="${w * 0.04}" flood-color="#000" flood-opacity=".6"/></filter>
+    </defs>
+    <path d="M${x + w * 0.06},${y} H${x + w * 0.94} Q${x + w},${y} ${x + w},${y + h * 0.06} V${y + h * 0.7} Q${x + w},${y + h} ${x + w / 2},${y + h} Q${x},${y + h} ${x},${y + h * 0.7} V${y + h * 0.06} Q${x},${y} ${x + w * 0.06},${y} Z" fill="url(#${id}wood)" filter="url(#${id}shadow)"/>
+    <path d="M${x + w * 0.06},${y} H${x + w * 0.94} Q${x + w},${y} ${x + w},${y + h * 0.06} V${y + h * 0.7} Q${x + w},${y + h} ${x + w / 2},${y + h} Q${x},${y + h} ${x},${y + h * 0.7} V${y + h * 0.06} Q${x},${y} ${x + w * 0.06},${y} Z" fill="url(#${id}grain)"/>
+    <circle cx="${x + w / 2}" cy="${y + h * 0.8}" r="${w * 0.075}" fill="#120a04"/>
+    ${tines.map(tine).join('')}
+    <rect x="${x + w * 0.07}" y="${y + h * 0.13}" width="${w * 0.86}" height="${h * 0.034}" rx="${h * 0.012}" fill="url(#${id}brass)"/>`;
+}
+
+/** A row-pair of wine glasses across width w, bottom edge at y. */
+function glassesSvg(x, y, w, lit = [], id = 'g') {
+  const out = [`<defs><filter id="${id}glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="${w * 0.006}"/></filter></defs>`];
+  const glasses = buildGlasses().sort((a, b) => (a.row === 'back' ? -1 : 1) - (b.row === 'back' ? -1 : 1));
+  for (const g of glasses) {
+    const gw = w * (g.row === 'front' ? 0.054 : 0.044);
+    const gh = gw / 0.4;
+    const cx = x + (g.x / 100) * w;
+    const bottom = g.row === 'front' ? y : y - w * 0.16;
+    const top = bottom - gh;
+    const bowlH = gh * 0.58;
+    const on = lit.includes(g.note);
+    const bowl = `M${cx - gw / 2},${top} L${cx + gw / 2},${top} L${cx + gw / 2},${top + bowlH * 0.35} Q${cx + gw / 2},${top + bowlH} ${cx},${top + bowlH} Q${cx - gw / 2},${top + bowlH} ${cx - gw / 2},${top + bowlH * 0.35} Z`;
+    const waterTop = top + bowlH * (1 - g.water);
+    out.push(`
+      <clipPath id="${id}c${g.note.replace('#', 's')}"><path d="${bowl}"/></clipPath>
+      ${on ? `<ellipse cx="${cx}" cy="${top}" rx="${gw * 0.9}" ry="${gw * 0.35}" fill="#b8a6ff" filter="url(#${id}glow)"/>` : ''}
+      <path d="${bowl}" fill="rgba(255,255,255,.06)" stroke="${on ? '#ffffff' : 'rgba(220,230,255,.5)'}" stroke-width="${on ? 2 : 1.2}"/>
+      <rect x="${cx - gw / 2}" y="${waterTop}" width="${gw}" height="${top + bowlH - waterTop}" fill="rgba(140,190,255,.5)" clip-path="url(#${id}c${g.note.replace('#', 's')})"/>
+      <ellipse cx="${cx}" cy="${top}" rx="${gw / 2}" ry="${gw * 0.08}" fill="none" stroke="${on ? '#fff' : 'rgba(240,245,255,.7)'}" stroke-width="1.2"/>
+      <rect x="${cx - gw * 0.04}" y="${top + bowlH}" width="${gw * 0.08}" height="${gh * 0.36}" fill="rgba(255,255,255,.35)"/>
+      <ellipse cx="${cx}" cy="${bottom}" rx="${gw * 0.38}" ry="${gw * 0.07}" fill="rgba(255,255,255,.12)" stroke="rgba(220,230,255,.45)"/>`);
+  }
+  return out.join('');
+}
+
+/** The lever harp, scaled by s and translated to (tx, ty); lit strings glow gold. */
+function harpSvg(tx, ty, s, litIndices = [], id = 'h') {
+  const neck = Array.from({ length: 41 }, (_, k) => {
+    const x = 120 + k * 20;
+    return `${k ? 'L' : 'M'}${x},${neckY(x).toFixed(1)}`;
+  }).join(' ');
+  const strings = HARP_STRINGS.map((st, i) => {
+    const { x, top, bottom } = stringGeometry(i);
+    const on = litIndices.includes(i);
+    const colour = on ? '#ffe4ad' : st.colour === 'c' ? '#e0503f' : st.colour === 'f' ? '#7896f2' : '#e9d8ab';
+    return `${on ? `<line x1="${x}" x2="${x}" y1="${top}" y2="${bottom}" stroke="#f3cf86" stroke-width="14" opacity=".55" filter="url(#${id}glow)"/>` : ''}
+      <line x1="${x}" x2="${x}" y1="${top}" y2="${bottom}" stroke="${colour}" stroke-width="${3.4 - (i / 14) * 1.6}" stroke-linecap="round"/>
+      <circle cx="${x + 10}" cy="${top + 4}" r="6" fill="${[2, 5, 6, 9, 12, 13].includes(i) ? '#f3cf86' : '#2a1a10'}" stroke="#c9a35a" stroke-width="2"/>`;
+  }).join('');
+  return `
+    <defs>
+      <linearGradient id="${id}wood" x1="0" x2="1"><stop offset="0" stop-color="#6b3c26"/><stop offset=".5" stop-color="#8a4f31"/><stop offset="1" stop-color="#4a2516"/></linearGradient>
+      <linearGradient id="${id}board" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#d9b07a"/><stop offset="1" stop-color="#b98a52"/></linearGradient>
+      <filter id="${id}glow" x="-200%" y="-10%" width="500%" height="120%"><feGaussianBlur stdDeviation="5"/></filter>
+    </defs>
+    <g transform="translate(${tx},${ty}) scale(${s})">
+      <path d="M86,96 Q120,60 150,${neckY(150) - 6} L150,700 L96,700 Z" fill="url(#${id}wood)"/>
+      <path d="${neck}" fill="none" stroke="url(#${id}wood)" stroke-width="34" stroke-linecap="round"/>
+      <path d="M150,${soundboardY(150) + 6} L940,${soundboardY(940) - 30} L956,${soundboardY(956) - 4} L170,${soundboardY(170) + 36} Z" fill="url(#${id}board)"/>
+      <path d="M90,700 L560,700 L540,716 L104,716 Z" fill="url(#${id}wood)"/>
+      ${strings}
+    </g>`;
+}
+
+const kalimbaIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#16100c"/>
+  <path d="M10 10 H54 V40 Q54 56 32 56 Q10 56 10 40 Z" fill="#c98a4f"/>
+  <rect x="12" y="15" width="40" height="3" rx="1.5" fill="#e9c77f"/>
+  ${[0, 1, 2, 3, 4, 5, 6].map((k) => {
+    const len = [22, 26, 30, 34, 30, 26, 22][k];
+    return `<rect x="${14.5 + k * 5.2}" y="12" width="3.4" height="${len}" rx="1.7" fill="${k === 3 ? '#ffd2b0' : '#e8ecee'}"/>`;
+  }).join('')}
+  <circle cx="32" cy="49" r="3.2" fill="#120a04"/>
+</svg>`;
+
+const glassIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#0a0d16"/>
+  <ellipse cx="32" cy="13" rx="15" ry="4" fill="#b8a6ff" opacity=".55"/>
+  <path d="M18 12 H46 V20 Q46 36 32 36 Q18 36 18 20 Z" fill="rgba(255,255,255,.08)" stroke="#e9e4ff" stroke-width="2.2"/>
+  <path d="M18.6 22 H45.4 Q44.6 35 32 35 Q19.4 35 18.6 22 Z" fill="#7ab4ff" opacity=".7"/>
+  <rect x="30.6" y="36" width="2.8" height="14" fill="#e9e4ff"/>
+  <ellipse cx="32" cy="51" rx="10" ry="2.6" fill="#e9e4ff"/>
+</svg>`;
+
+const harpIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#140b0e"/>
+  <path d="M13 54 V12 Q13 8 18 9 Q34 12 52 30" fill="none" stroke="#a0623c" stroke-width="5" stroke-linecap="round"/>
+  <path d="M16 55 L53 33" stroke="#d9b07a" stroke-width="5" stroke-linecap="round"/>
+  ${[0, 1, 2, 3, 4, 5].map((k) => {
+    const x = 20 + k * 5.6;
+    const top = 11 + Math.pow(k / 5, 1.5) * 15;
+    const bottom = 53 - (x - 16) * (22 / 37);
+    return `<line x1="${x}" x2="${x}" y1="${top}" y2="${bottom}" stroke="${k === 0 ? '#e0503f' : k === 3 ? '#f3cf86' : '#e9d8ab'}" stroke-width="1.8" stroke-linecap="round"/>`;
+  }).join('')}
+</svg>`;
+
+const card = (bg, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">${bg}${body}</svg>`;
+
+const ogKalimba = card(
+  `<defs><radialGradient id="bg" cx="70%" cy="40%" r="65%"><stop offset="0" stop-color="#3a2212"/><stop offset=".6" stop-color="#1e1610"/><stop offset="1" stop-color="#16100c"/></radialGradient></defs><rect width="1200" height="630" fill="url(#bg)"/>`,
+  `${kalimbaSvg(660, 84, 480, ['C4', 'G4', 'E5'], 'ok')}
+  <text x="72" y="118" font-family="${MONO}" font-size="22" fill="#ff8a4c" letter-spacing="6">NO. 03 · THUMB PIANO</text>
+  <text x="66" y="300" font-family="${DISPLAY}" font-weight="800" font-size="124" fill="#e7b07a" letter-spacing="2">KALIMBA</text>
+  <text x="72" y="380" font-family="${SANS}" font-size="27" fill="#d9c6b2">Tap seventeen steel tines —</text>
+  <text x="72" y="416" font-family="${SANS}" font-size="27" fill="#d9c6b2">and read songs in kalimba number tabs.</text>
+  <text x="72" y="470" font-family="${MONO}" font-size="30" fill="#f6ede3" letter-spacing="8">1 1 5 5 6 6 5</text>
+  ${footer('#ff8a4c')}`,
+);
+
+const ogGlass = card(
+  `<defs><radialGradient id="bg" cx="70%" cy="0%" r="80%"><stop offset="0" stop-color="#2a2552"/><stop offset=".6" stop-color="#121633"/><stop offset="1" stop-color="#0a0d16"/></radialGradient></defs><rect width="1200" height="630" fill="url(#bg)"/>`,
+  `${glassesSvg(600, 520, 560, ['G4', 'D5'], 'og')}
+  <rect x="580" y="520" width="600" height="6" fill="rgba(255,255,255,.06)"/>
+  <text x="72" y="118" font-family="${MONO}" font-size="22" fill="#b8a6ff" letter-spacing="6">NO. 04 · MUSICAL GLASSES, 1761</text>
+  <text x="66" y="262" font-family="${DISPLAY}" font-weight="800" font-size="150" fill="#f2efff" letter-spacing="2">GLASS</text>
+  <text x="66" y="392" font-family="${DISPLAY}" font-weight="800" font-size="150" fill="#cfc4ff" letter-spacing="2">HARP</text>
+  <text x="72" y="448" font-family="${SANS}" font-size="27" fill="#b9c2dc">Circle a rim and the glass sings —</text>
+  <text x="72" y="484" font-family="${SANS}" font-size="27" fill="#b9c2dc">faster for louder, many fingers for chords.</text>
+  ${footer('#b8a6ff')}`,
+);
+
+const ogHarp = card(
+  `<defs><radialGradient id="bg" cx="75%" cy="30%" r="70%"><stop offset="0" stop-color="#3a1a1f"/><stop offset=".6" stop-color="#1c1014"/><stop offset="1" stop-color="#140b0e"/></radialGradient></defs><rect width="1200" height="630" fill="url(#bg)"/>`,
+  `${harpSvg(588, 52, 0.63, [4, 7], 'oh')}
+  <text x="72" y="118" font-family="${MONO}" font-size="22" fill="#f3cf86" letter-spacing="6">NO. 05 · CELTIC LEVER HARP</text>
+  <text x="66" y="262" font-family="${DISPLAY}" font-weight="800" font-size="150" fill="#fff1c9" letter-spacing="2">LEVER</text>
+  <text x="66" y="392" font-family="${DISPLAY}" font-weight="800" font-size="150" fill="#f3cf86" letter-spacing="2">HARP</text>
+  <text x="72" y="448" font-family="${SANS}" font-size="27" fill="#d8bfb6">Pluck, or drag across for a glissando —</text>
+  <text x="72" y="484" font-family="${SANS}" font-size="27" fill="#d8bfb6">real sharping levers flip for every song.</text>
+  ${footer('#f3cf86')}`,
+);
 
 /* ───────── ICO wrapper (a PNG inside a one-entry .ico) ───────── */
 
@@ -180,6 +340,9 @@ const files = {
   'favicon.svg': umbrellaIcon(),
   'favicon-steelpan.svg': steelpanIcon,
   'favicon-theremin.svg': thereminIcon,
+  'favicon-kalimba.svg': kalimbaIcon,
+  'favicon-glass-harp.svg': glassIcon,
+  'favicon-harp.svg': harpIcon,
 };
 for (const [name, svg] of Object.entries(files)) await writeFile(new URL(name, OUT), svg.replace(/\n\s*/g, ' ').trim());
 
@@ -192,5 +355,8 @@ await writeFile(new URL('icon-maskable-512.png', OUT), await png(umbrellaIcon(51
 await writeFile(new URL('og/home.png', OUT), await png(ogHome, 1200, 630));
 await writeFile(new URL('og/steelpan.png', OUT), await png(ogSteelpan, 1200, 630));
 await writeFile(new URL('og/theremin.png', OUT), await png(ogTheremin, 1200, 630));
+await writeFile(new URL('og/kalimba.png', OUT), await png(ogKalimba, 1200, 630));
+await writeFile(new URL('og/glass-harp.png', OUT), await png(ogGlass, 1200, 630));
+await writeFile(new URL('og/harp.png', OUT), await png(ogHarp, 1200, 630));
 
 console.log('Wrote favicons, app icons and Open Graph cards to /public');

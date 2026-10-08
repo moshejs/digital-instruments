@@ -1,0 +1,64 @@
+---
+import Base from '../layouts/Base.astro';
+import SongPanel from '../components/SongPanel.astro';
+import InstrumentFooter from '../components/InstrumentFooter.astro';
+import '../styles/instrument.css';
+import '../styles/glass-harp.css';
+import { instrumentBySlug, instrumentJsonLd, breadcrumbJsonLd } from '../data/instruments';
+import { SITE, withBase } from '../lib/site';
+
+const inst = instrumentBySlug('glass-harp');
+const url = new URL(Astro.url.pathname, Astro.site).href;
+const image = new URL(withBase('og/glass-harp.png'), Astro.site).href;
+---
+
+<Base
+  title={`Glass Harp — Play Singing Wine Glasses Online | ${SITE.name}`}
+  description={inst.description}
+  image="og/glass-harp.png"
+  imageAlt="Rows of tuned crystal wine glasses on midnight velvet, one rim glowing violet as it sings."
+  keywords={inst.keywords}
+  jsonLd={[instrumentJsonLd(inst, url, image), breadcrumbJsonLd(inst, url, Astro.site!)]}
+  themeColor="#0a0d16"
+  favicon="favicon-glass-harp.svg"
+>
+  <div class="shell">
+    <header class="top">
+      <div class="brand">
+        <div class="eyebrow">{inst.catalogNo} · Musical glasses, 1761</div>
+        <h1 class="title">Glass Harp</h1>
+        <p class="tag"><b>Press and circle a rim</b> to make a glass sing — faster circles sing louder. Use several fingers for chords. More water, lower note.</p>
+      </div>
+      <div class="readout" aria-live="off"><span class="n" id="lastNote">—</span><span class="h">last glass</span></div>
+    </header>
+
+    <div class="grid">
+      <section class="stage" aria-label="Glass harp — press and circle a glass to play, or hold keyboard keys">
+        <div class="table" id="table">
+          <span class="rub-hint" aria-hidden="true">press · circle · listen</span>
+        </div>
+        <div class="stage-foot">
+          <span>Tap for a <b>ting</b> · circle for a <b>song</b> · lift to let it ring</span>
+          <span>Hold keys like a piano <kbd>Z</kbd> <kbd>S</kbd> <kbd>X</kbd> … <kbd>Q</kbd> <kbd>2</kbd> <kbd>W</kbd> …</span>
+        </div>
+        <noscript><p class="stage-foot">The glass harp needs JavaScript to make sound.</p></noscript>
+      </section>
+
+      <SongPanel intro="Pick a tune, then circle each glowing glass until it sings." tip="Listen first — then Play Along and circle each candle-lit glass.">
+        <div class="row" slot="controls">
+          <label for="swNames">Show note names</label>
+          <span class="switch"><input type="checkbox" id="swNames" checked /><span class="track"></span><span class="knob"></span></span>
+        </div>
+        <Fragment slot="legend"><span><i class="a"></i>singing glass</span><span><i class="t"></i>play this next</span></Fragment>
+      </SongPanel>
+    </div>
+
+    <InstrumentFooter slug="glass-harp">
+      Every glass is <b>synthesized live</b> — no recordings. All songs are <b>public-domain / traditional</b>.
+    </InstrumentFooter>
+  </div>
+</Base>
+
+<script>
+  import '../scripts/glass-harp.ts';
+</script>

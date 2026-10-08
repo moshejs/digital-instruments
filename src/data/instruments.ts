@@ -1,9 +1,12 @@
-import { SITE } from '../lib/site';
+import { SITE, withBase } from '../lib/site';
+import type { InstrumentSlug } from './availability';
 
 export interface Instrument {
-  slug: 'steelpan' | 'theremin';
+  slug: InstrumentSlug;
   catalogNo: string;
   name: string;
+  /** Compact name for navigation and table chips. */
+  short: string;
   /** The name printed on the instrument's own page. */
   displayName: string;
   tagline: string;
@@ -11,11 +14,14 @@ export interface Instrument {
   keywords: string[];
   specs: [label: string, value: string][];
   cta: string;
+  /** Signature colour, used for hover states and links in the catalogue. */
+  accent: string;
 }
 
 export const INSTRUMENTS: Instrument[] = [
   {
     slug: 'steelpan',
+    short: 'Steelpan',
     catalogNo: 'No. 01',
     name: 'Steelpan',
     displayName: 'Steelpan',
@@ -31,9 +37,11 @@ export const INSTRUMENTS: Instrument[] = [
       ['Engine', 'Additive partials + strike noise'],
     ],
     cta: 'Play the steelpan',
+    accent: '#f6b23c',
   },
   {
     slug: 'theremin',
+    short: 'Theremin',
     catalogNo: 'No. 02',
     name: 'Theremin',
     displayName: 'Aetherwave',
@@ -49,6 +57,67 @@ export const INSTRUMENTS: Instrument[] = [
       ['Engine', 'Twin oscillators + LFO'],
     ],
     cta: 'Play the theremin',
+    accent: '#5cf2d6',
+  },
+  {
+    slug: 'kalimba',
+    short: 'Kalimba',
+    catalogNo: 'No. 03',
+    name: 'Kalimba',
+    displayName: 'Kalimba',
+    tagline: 'A thumb piano of tuned steel tines on a warm wooden board — tap the tines, or play with two thumbs.',
+    description:
+      'Play a 17-key kalimba (thumb piano) in your browser. Tap steel tines laid out like the real instrument, read kalimba number tabs, and learn songs with a follow-the-tines guide — synthesized live with Web Audio.',
+    keywords: ['kalimba', 'thumb piano', 'mbira', 'online kalimba', 'virtual kalimba', 'kalimba tabs', 'Web Audio', 'learn songs'],
+    specs: [
+      ['Origin', 'Southern Africa · mbira family'],
+      ['Range', 'C4 – E6 · 17 tines, C major'],
+      ['Layout', 'Alternating from the centre'],
+      ['Play with', 'Tap · two thumbs · number keys'],
+      ['Engine', 'Clamped-tine modes 1 : 6.27 : 17.55'],
+    ],
+    cta: 'Play the kalimba',
+    accent: '#ff8a4c',
+  },
+  {
+    slug: 'glass-harp',
+    short: 'Glass Harp',
+    catalogNo: 'No. 04',
+    name: 'Glass Harp',
+    displayName: 'Glass Harp',
+    tagline: 'Twenty-five tuned wine glasses that sing when you circle their rims. Faster circles sing louder.',
+    description:
+      'Play a glass harp in your browser: press and circle the rim of a tuned wine glass to make it sing, faster for louder, with multi-touch chords. 25 chromatic glasses, synthesized live with Web Audio, plus a follow-along song guide.',
+    keywords: ['glass harp', 'glass armonica', 'singing wine glasses', 'musical glasses', 'Benjamin Franklin armonica', 'online instrument', 'Web Audio'],
+    specs: [
+      ['Origin', 'Musical glasses · Franklin, 1761'],
+      ['Range', 'C4 – C6 · 25 glasses'],
+      ['Layout', 'Two rows, like piano keys'],
+      ['Play with', 'Circle the rim · multi-touch'],
+      ['Engine', 'Friction-driven glass modes'],
+    ],
+    cta: 'Play the glass harp',
+    accent: '#b8a6ff',
+  },
+  {
+    slug: 'harp',
+    short: 'Harp',
+    catalogNo: 'No. 05',
+    name: 'Lever Harp',
+    displayName: 'Lever Harp',
+    tagline: 'Fifteen strings to pluck or sweep across, with real sharping levers that flip themselves for each song.',
+    description:
+      'Play a lever harp in your browser: pluck strings or drag across them to strum glissandos, and flip sharping levers like a real Celtic harp. Physically modelled plucked strings, synthesized live, with a follow-along song guide.',
+    keywords: ['harp', 'lever harp', 'celtic harp', 'online harp', 'virtual harp', 'glissando', 'Karplus-Strong', 'Web Audio'],
+    specs: [
+      ['Origin', 'Celtic lever harp'],
+      ['Range', 'C4 – C6 · 15 strings, E♭ tuning'],
+      ['Levers', 'Raise any string a semitone'],
+      ['Play with', 'Pluck · drag to strum · keys'],
+      ['Engine', 'Karplus–Strong plucked string'],
+    ],
+    cta: 'Play the harp',
+    accent: '#f3cf86',
   },
 ];
 
@@ -76,5 +145,17 @@ export function instrumentJsonLd(instrument: Instrument, url: string, image: str
     author: { '@type': 'Person', name: SITE.author },
     isPartOf: { '@type': 'WebSite', name: SITE.name },
     keywords: instrument.keywords.join(', '),
+  };
+}
+
+/** schema.org breadcrumb: catalogue → instrument. */
+export function breadcrumbJsonLd(instrument: Instrument, url: string, site: URL): Record<string, unknown> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: SITE.name, item: new URL(withBase(), site).href },
+      { '@type': 'ListItem', position: 2, name: instrument.name, item: url },
+    ],
   };
 }

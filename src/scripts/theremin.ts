@@ -7,7 +7,7 @@ import { REST, centsBetween, freqInfo, midiToFreq, noteToFreq, snapFreq, type Sc
 import { createAudioContext, makeImpulse } from '../lib/audio';
 import { FIELD_MAX_MIDI, FIELD_MIN_MIDI, freqToX, tiltToControl, xToFreq, yToVolume } from '../lib/theremin-field';
 import { SONGS, findSong, playableCount, type Song } from '../data/songs';
-import { $, $as, NoteStrip, b, markActive, renderSongList, setFeedback, setSongInUrl, songIdFromUrl } from './shared/song-ui';
+import { $, $as, NoteStrip, b, markActive, renderSongList, setFeedback, setSongInUrl, songIdFromUrl, capture } from './shared/song-ui';
 
 /* ───────────────────────────── sound ───────────────────────────── */
 
@@ -306,7 +306,7 @@ function initField(): void {
       player.feedback('info', 'Recentered — hold the phone comfortably, then rotate & tilt to play.');
       return;
     }
-    field.setPointerCapture?.(e.pointerId);
+    capture(field, e.pointerId);
     onPointer(e);
   });
   for (const type of ['pointerup', 'pointerleave', 'pointercancel'] as const) {

@@ -1,5 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
+import SongPanel from '../components/SongPanel.astro';
+import InstrumentFooter from '../components/InstrumentFooter.astro';
 import '../styles/steelpan.css';
 import { instrumentBySlug, instrumentJsonLd } from '../data/instruments';
 import { SITE, withBase } from '../lib/site';
@@ -52,70 +54,22 @@ const breadcrumbs = {
         <noscript><p class="hint-note">The steelpan needs JavaScript to make sound.</p></noscript>
       </section>
 
-      <aside class="panel">
-        <div class="card">
-          <h2><span class="dot"></span>Song Library</h2>
-          <div class="songs" id="songList"></div>
+      <SongPanel intro="Choose a tune from the library to load the play-along guide.">
+        <div class="row" slot="controls">
+          <label for="swNames">Show note names on pan</label>
+          <span class="switch"><input type="checkbox" id="swNames" checked /><span class="track"></span><span class="knob"></span></span>
         </div>
-
-        <div class="card player" id="player">
-          <div class="phead">
-            <span class="ptitle" id="pTitle">Pick a song</span>
-            <span class="pmeta" id="pMeta"></span>
-          </div>
-          <p class="pdesc" id="pDesc">Choose a tune from the library to load the play-along guide.</p>
-
-          <div class="transport">
-            <button class="btn primary" id="btnListen" type="button" disabled><span class="ic">▶</span>Listen</button>
-            <button class="btn guide" id="btnGuide" type="button" disabled><span class="ic">◎</span>Play Along</button>
-            <button class="btn" id="btnStop" type="button" disabled><span class="ic">■</span>Stop</button>
-            <button class="btn" id="btnHint" type="button" disabled><span class="ic">♪</span>Hint</button>
-          </div>
-
-          <div class="progress"><i id="progFill"></i></div>
-
-          <div class="guide-now idle" id="guideNow" aria-live="polite">
-            <div class="big" id="gnNote">—</div>
-            <div class="meta">
-              <div class="lyr" id="gnLyric">Ready when you are</div>
-              <div class="cnt" id="gnCount">—</div>
-            </div>
-          </div>
-
-          <div class="strip-wrap">
-            <div class="playhead"></div>
-            <div class="strip" id="strip"></div>
-          </div>
-
-          <div class="feedback info" id="feedback" aria-live="polite">Tip: <b>Listen</b> first to hear it, then <b>Play Along</b> to learn it note by note.</div>
-
-          <div class="ctrls">
-            <div class="row">
-              <label for="tempo">Tempo</label>
-              <input type="range" id="tempo" min="50" max="180" value="100" />
-              <span class="tempo-val" id="tempoVal">100 BPM</span>
-            </div>
-            <div class="row">
-              <label for="swNames">Show note names on pan</label>
-              <span class="switch"><input type="checkbox" id="swNames" checked /><span class="track"></span><span class="knob"></span></span>
-            </div>
-            <div class="row">
-              <label for="swKeys">Show keyboard keys</label>
-              <span class="switch"><input type="checkbox" id="swKeys" /><span class="track"></span><span class="knob"></span></span>
-            </div>
-            <div class="legend">
-              <span><i class="a"></i>struck note</span>
-              <span><i class="t"></i>play this next</span>
-            </div>
-          </div>
+        <div class="row" slot="controls">
+          <label for="swKeys">Show keyboard keys</label>
+          <span class="switch"><input type="checkbox" id="swKeys" /><span class="track"></span><span class="knob"></span></span>
         </div>
-      </aside>
+        <Fragment slot="legend"><span><i class="a"></i>struck note</span><span><i class="t"></i>play this next</span></Fragment>
+      </SongPanel>
     </div>
 
-    <footer class="foot">
+    <InstrumentFooter slug="steelpan">
       Every note is <b>synthesized live</b> with the Web Audio API — no samples. All songs are <b>public-domain / traditional</b>.
-      <br /><a href={withBase('theremin/')}>Next in the catalogue: the theremin →</a>
-    </footer>
+    </InstrumentFooter>
   </div>
 </Base>
 
