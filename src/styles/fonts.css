@@ -6,3 +6,12 @@
 @import '@fontsource/ibm-plex-sans/600';
 @import '@fontsource/ibm-plex-mono/400';
 @import '@fontsource/ibm-plex-mono/500';
+
+/* The Plex fonts have no ♭/♯, and browser fallbacks draw them tiny. This face
+   covers only those two glyphs, from a symbol font every platform ships. */
+@font-face {
+  font-family: 'Accidentals';
+  src: local('Apple Symbols'), local('Segoe UI Symbol'), local('Noto Sans Symbols 2'), local('DejaVu Sans');
+  unicode-range: U+266D-266F;
+  size-adjust: 130%;
+}

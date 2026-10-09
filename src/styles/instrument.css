@@ -12,8 +12,8 @@
   --bad: #f5726f;
   --radius: 14px;
   --shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.7);
-  --font-ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-ui: 'Accidentals', 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Accidentals', 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   --font-display: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
   --tap: 44px;
   /* text-safe variants of the accents; light themes darken these */
@@ -103,7 +103,7 @@ kbd { font-family: var(--font-mono); font-size: 12px; background: var(--panel-2)
 .coach-idle p { margin: 0; color: var(--ink-dim); font-size: 15px; max-width: 46ch; }
 .coach-live { display: none; }
 .coach[data-state='practice'] .coach-idle { display: none; }
-.coach[data-state='practice'] .coach-live { display: grid; gap: 12px; }
+.coach[data-state='practice'] .coach-live { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 
 .coach-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .ptitle { margin: 0; font-size: 18px; font-weight: 600; line-height: 1.25; text-wrap: balance; }
@@ -160,6 +160,15 @@ kbd { font-family: var(--font-mono); font-size: 12px; background: var(--panel-2)
 .feedback.info { color: var(--ink-dim); }
 .feedback b { color: var(--ink); font-weight: 600; }
 
+/* End of a guided song: what happened, then what to do next */
+.coach-end { display: grid; gap: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
+.end-stats { margin: 0; font-family: var(--font-mono); font-size: 13px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+.end-stats b { color: var(--ink); font-weight: 600; }
+.end-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.end-actions .btn { flex: 1 1 auto; min-width: 0; }
+.end-actions .btn > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#btnNext b { font-weight: 600; }
+
 /* Wide coach (under a full-width instrument): note | transport on one line, strip beneath */
 @container (min-width: 720px) {
   .coach-main { grid-template-columns: minmax(240px, 0.8fr) auto; align-items: center; }
@@ -192,6 +201,8 @@ kbd { font-family: var(--font-mono); font-size: 12px; background: var(--panel-2)
   .practice .coach[data-state='practice'] .transport .label { position: static; width: auto; height: auto; clip: auto; white-space: nowrap; }
   .practice .coach[data-state='practice'] .transport .icon { width: 18px; height: 18px; }
   .practice .coach[data-state='practice'] .feedback { font-size: 13px; min-height: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .practice .coach[data-state='practice'] .coach-end { padding-top: 8px; gap: 8px; }
+  .practice .coach[data-state='practice'] .end-actions { flex-wrap: nowrap; }
 }
 
 /* ---------- songs ---------- */

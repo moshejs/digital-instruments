@@ -117,8 +117,9 @@ h1.title span{ color:var(--cyan-2); }
 .target .lab{ position:absolute; top:-2px; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:12px; color:var(--cyan-2); background:rgba(8,8,16,.8); padding:1px 7px; border-radius:6px; border:1px solid var(--line-2); }
 .target.hit .lab{ color:var(--good); border-color:color-mix(in srgb,var(--good) 50%,transparent); }
 
-/* power overlay */
-.power{ position:absolute; inset:0; z-index:10; display:grid; place-items:center; background:radial-gradient(60% 60% at 50% 45%, rgba(10,12,24,.6), rgba(5,5,10,.92)); backdrop-filter:blur(2px); cursor:pointer; }
+/* power overlay: sits over the field as its sibling inside .field-box */
+.field-box{ position:relative; }
+.power{ position:absolute; inset:0; z-index:10; border-radius:14px; overflow:hidden; display:grid; place-items:center; background:radial-gradient(60% 60% at 50% 45%, rgba(10,12,24,.6), rgba(5,5,10,.92)); backdrop-filter:blur(2px); cursor:pointer; }
 .power .btn-power{
   display:flex; flex-direction:column; align-items:center; gap:12px; color:var(--ink);
   background:none; border:none; cursor:pointer; font-family:var(--font-mono);
@@ -165,7 +166,7 @@ button.power { border: 0; padding: 0; margin: 0; width: 100%; font: inherit; col
 
 /* Phones: a gutter on the right you can always scroll the page from (the field captures touch) */
 @media (max-width:760px){
-  .field-wrap{ width:calc(100% - 28px); }
+  .field-box{ width:calc(100% - 28px); }
   .stage{ position:relative; }
   .stage::after{ content:""; position:absolute; right:9px; top:calc(50% - 30px); width:4px; height:60px; border-radius:2px;
     background:repeating-linear-gradient(180deg, var(--line-2) 0 3px, transparent 3px 7px); pointer-events:none; }

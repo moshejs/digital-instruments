@@ -272,7 +272,7 @@ function init(): void {
           .forEach((n, k) => window.setTimeout(() => ringTine(n.note), 80 * k));
       },
     },
-    { instruction: ['Pluck the ', 'glowing tine', ' to play each note.'], done: 'Lovely playing. Try another song?' },
+    { instruction: ['Pluck the ', 'glowing tine', ' to play each note.'], done: 'Lovely playing!' },
   );
   initNotation();
   initKeyboard();

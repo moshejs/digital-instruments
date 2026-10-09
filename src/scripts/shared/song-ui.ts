@@ -207,7 +207,7 @@ let announceTimer = 0;
 export function announce(text: string): void {
   const status = document.getElementById('srStatus');
   if (!status) return;
-  pendingAnnouncement = pendingAnnouncement ? `${pendingAnnouncement}. ${text}` : text;
+  pendingAnnouncement = pendingAnnouncement ? `${pendingAnnouncement.replace(/[.!]$/, '')}. ${text}` : text;
   window.clearTimeout(announceTimer);
   status.textContent = '';
   announceTimer = window.setTimeout(() => {
@@ -216,8 +216,9 @@ export function announce(text: string): void {
   }, 30);
 }
 
-/** Note names the way a screen reader should say them: "F♯4" → "F sharp 4". */
-export const spoken = (note: string): string => note.replace('#', ' sharp ').replace('♯', ' sharp ');
+/** Note names the way a screen reader should say them: "F♯4" → "F sharp 4", "B♭4" → "B flat 4". */
+export const spoken = (note: string): string =>
+  note.replace('#', ' sharp ').replace('♯', ' sharp ').replace('♭', ' flat ');
 
 /** Shows the "last note" readout in the header (hidden until something is played). */
 export function showLast(text: string): void {

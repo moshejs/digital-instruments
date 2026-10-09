@@ -51,6 +51,14 @@ const { idle } = Astro.props;
     </div>
 
     <p class="feedback info" id="feedback"></p>
+
+    <div class="coach-end" id="coachEnd" hidden>
+      <p class="end-stats" id="endStats"></p>
+      <div class="end-actions">
+        <button class="btn guide" id="btnAgain" type="button"><Icon name="guide" /><span>Play again</span></button>
+        <button class="btn" id="btnNext" type="button"><Icon name="play" /><span>Next: <b id="nextTitle"></b></span></button>
+      </div>
+    </div>
   </div>
 
   <p class="sr-only" id="srStatus" aria-live="polite"></p>

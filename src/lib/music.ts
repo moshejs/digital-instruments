@@ -28,6 +28,14 @@ export function midiToName(midi: number): string {
   return `${NOTE_NAMES[pc]}${Math.floor(midi / 12) - 1}`;
 }
 
+const FLATS: Record<string, string> = { 'C#': 'D♭', 'D#': 'E♭', 'F#': 'G♭', 'G#': 'A♭', 'A#': 'B♭' };
+
+/** Display spelling with flats, as pan players write it: "A#4" → "B♭4". Rests pass through. */
+export function flatName(name: string): string {
+  const m = /^([A-G]#)(-?\d+)$/.exec(name);
+  return m ? `${FLATS[m[1]]}${m[2]}` : name;
+}
+
 /** Normalises enharmonic spellings ("Bb4" → "A#4"); rests pass through untouched. */
 export function canonicalNote(name: string): string {
   return name === REST ? REST : midiToName(noteToMidi(name));

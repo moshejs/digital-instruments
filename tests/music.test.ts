@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  canonicalNote, centsBetween, freqInfo, midiToFreq, midiToName, noteToFreq, noteToMidi, snapFreq,
+  canonicalNote, centsBetween, flatName, freqInfo, midiToFreq, midiToName, noteToFreq, noteToMidi, snapFreq,
 } from '../src/lib/music';
 
 describe('note math', () => {
@@ -58,5 +58,19 @@ describe('scale assist', () => {
     expect(freqInfo(snapFreq(noteToFreq('F#4'), 'major')).name).toMatch(/^(F|G)4$/);
     expect(freqInfo(snapFreq(noteToFreq('F4'), 'pentatonic')).name).toMatch(/^(E|G)4$/);
     expect(freqInfo(snapFreq(noteToFreq('B4'), 'pentatonic')).name).toMatch(/^(A4|C5)$/);
+  });
+});
+
+describe('flat spelling', () => {
+  it('spells black notes as flats and leaves naturals and rests alone', () => {
+    expect(flatName('A#4')).toBe('B♭4');
+    expect(flatName('D#5')).toBe('E♭5');
+    expect(flatName('C6')).toBe('C6');
+    expect(flatName('REST')).toBe('REST');
+  });
+  it('round-trips to the same pitch', () => {
+    for (const n of ['C#4', 'D#4', 'F#4', 'G#4', 'A#4']) {
+      expect(canonicalNote(flatName(n).replace('♭', 'b'))).toBe(n);
+    }
   });
 });

@@ -29,6 +29,8 @@ export interface GuideHost {
   celebrate?(song: Song): void;
   /** Show notes in the instrument's own notation (kalimba tabs); defaults to note names. */
   formatNote?(note: string): string;
+  /** How a screen reader should say a note; defaults to its name ("F sharp 4"). */
+  speakNote?(note: string): string;
 }
 
 export interface GuideCopy {
@@ -48,6 +50,11 @@ export class GuidePlayer {
   private idx = 0;
   private target: string | null = null;
   private praised = false;
+  /** Play-along tally for the end-of-song summary. */
+  private slips = 0;
+  private hints = 0;
+  /** Supplied by mountGuide: the song after this one, if any. */
+  nextSong: (song: Song) => Song | null = () => null;
   private timers: number[] = [];
   private readonly strip = new NoteStrip($('strip'));
   private readonly el = {
@@ -56,6 +63,7 @@ export class GuidePlayer {
     stop: $as<HTMLButtonElement>('btnStop'), hint: $as<HTMLButtonElement>('btnHint'),
     now: $('guideNow'), gnNote: $('gnNote'), gnLyric: $('gnLyric'), gnCount: $('gnCount'),
     feedback: $('feedback'), tempo: $as<HTMLInputElement>('tempo'), tempoVal: $('tempoVal'),
+    end: $('coachEnd'), endStats: $('endStats'), next: $as<HTMLButtonElement>('btnNext'), nextTitle: $('nextTitle'),
   };
 
   constructor(private readonly host: GuideHost, private readonly copy: GuideCopy) {}
@@ -67,6 +75,10 @@ export class GuidePlayer {
   /** A note as this instrument writes it. */
   private fmt(note: string): string {
     return this.host.formatNote ? this.host.formatNote(note) : pretty(note);
+  }
+
+  private say(note: string): string {
+    return this.host.speakNote ? this.host.speakNote(note) : spoken(note);
   }
 
   /** Re-render the coach after the instrument's notation setting changes. */
@@ -142,6 +154,7 @@ export class GuidePlayer {
     this.el.guide.setAttribute('aria-pressed', String(mode === 'guide'));
     this.el.stop.disabled = mode === 'idle';
     this.el.now.classList.toggle('idle', mode === 'idle');
+    this.el.end.hidden = true;
   }
 
   stop(): void {
@@ -186,6 +199,8 @@ export class GuidePlayer {
     this.setMode('guide');
     this.host.unlock();
     this.praised = false;
+    this.slips = 0;
+    this.hints = 0;
     const [before, bold, after] = this.copy.instruction;
     this.feedback('info', before, b(bold), after);
     revealInstrument();
@@ -205,7 +220,7 @@ export class GuidePlayer {
       return;
     }
     this.setTarget(n.note);
-    announce(`Play ${spoken(n.note)}`);
+    announce(`Play ${this.say(n.note)}`);
   }
 
   /** Instruments call this whenever the player sounds a note. */
@@ -221,9 +236,10 @@ export class GuidePlayer {
       this.advanceTo(this.idx + 1);
     } else {
       this.praised = false;
+      this.slips++;
       this.host.showWrong?.(note);
       this.feedback('bad', `That was ${this.fmt(note)} — you want `, b(this.fmt(this.target)), '.');
-      announce(`That was ${spoken(note)}. You want ${spoken(this.target)}.`);
+      announce(`That was ${this.say(note)}. You want ${this.say(this.target)}.`);
     }
   }
 
@@ -231,6 +247,7 @@ export class GuidePlayer {
     if (!this.song) return;
     this.host.unlock();
     const note = this.mode === 'guide' ? this.target : this.song.notes.find((n) => n.note !== REST)?.note;
+    if (note && this.mode === 'guide') this.hints++;
     if (note) this.host.perform(note, { durationMs: 700, velocity: 0.55 });
   }
 
@@ -245,10 +262,30 @@ export class GuidePlayer {
     this.el.gnNote.textContent = '★';
     this.el.gnLyric.textContent = mode === 'guide' ? 'You played it!' : "That's the tune!";
     this.el.gnCount.textContent = 'complete';
-    if (mode === 'guide') this.feedback('good', this.copy.done);
-    else this.feedback('good', 'Now press ', b('Play along'), ' to play it yourself.');
-    announce(mode === 'guide' ? `You played ${song.title}!` : `Finished. Now press Play along to play it yourself.`);
+    if (mode === 'guide') {
+      this.feedback('good', this.copy.done);
+      this.showSummary(song);
+    } else {
+      this.feedback('good', 'Now press ', b('Play along'), ' to play it yourself.');
+      announce('Finished. Now press Play along to play it yourself.');
+    }
     this.host.celebrate?.(song);
+  }
+
+  /** After Play along: notes, slips and hints, then Play again / Next song. */
+  private showSummary(song: Song): void {
+    const notes = playableCount(song);
+    const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+    const clean = this.slips === 0 && this.hints === 0;
+    const parts = [`${notes}/${notes} notes`, plural(this.slips, 'slip'), plural(this.hints, 'hint')];
+    this.el.endStats.replaceChildren(
+      b(parts[0]), ` · ${parts[1]} · ${parts[2]}`, clean ? ' — a clean run!' : '',
+    );
+    const next = this.nextSong(song);
+    this.el.next.hidden = !next;
+    this.el.nextTitle.textContent = next?.title ?? '';
+    this.el.end.hidden = false;
+    announce(`You played ${song.title}: ${parts.join(', ')}.${clean ? ' A clean run!' : ''} Play again${next ? `, or next: ${next.title}` : ''}.`);
   }
 }
 
@@ -258,18 +295,26 @@ export class GuidePlayer {
  */
 export function mountGuide(slug: InstrumentSlug, host: GuideHost, copy: GuideCopy): GuidePlayer {
   const player = new GuidePlayer(host, copy);
-  const buttons = renderSongList(
-    $('songList'),
-    SONGS,
-    (song) => {
-      markActive(buttons, song.id);
-      setSongInUrl(song.id);
-      host.unlock();
-      player.load(song);
-    },
-    (song) => unavailableReason(slug, song),
-  );
+  const pick = (song: Song) => {
+    markActive(buttons, song.id);
+    setSongInUrl(song.id);
+    host.unlock();
+    player.load(song);
+  };
+  const buttons = renderSongList($('songList'), SONGS, pick, (song) => unavailableReason(slug, song));
   initLibraryToggle();
+
+  // "Next" follows the library order, wrapping round, skipping songs this instrument can't play
+  const playable = SONGS.filter((s) => !unavailableReason(slug, s));
+  player.nextSong = (song) => {
+    if (playable.length < 2) return null;
+    return playable[(playable.findIndex((s) => s.id === song.id) + 1) % playable.length];
+  };
+  $('btnAgain').addEventListener('click', () => player.guide());
+  $('btnNext').addEventListener('click', () => {
+    const next = player.song && player.nextSong(player.song);
+    if (next) pick(next);
+  });
 
   $('btnListen').addEventListener('click', () => player.toggleListen());
   $('btnGuide').addEventListener('click', () => player.guide());

@@ -3,12 +3,12 @@
  * Tuned octave + twelfth ring over a bright, fast-decaying metallic "ping",
  * with a filtered-noise strike transient and a touch of plate shimmer.
  */
-import { REST, noteToFreq } from '../lib/music';
+import { REST, flatName, noteToFreq } from '../lib/music';
 import { createAudioContext, makeImpulse, makeNoise } from '../lib/audio';
 import { buildPads } from '../lib/steelpan-layout';
 import { PIANO_KEYMAP, invertKeymap } from '../lib/keyboard';
 import type { Song } from '../data/songs';
-import { $, $as, showLast } from './shared/song-ui';
+import { $, $as, showLast, spoken } from './shared/song-ui';
 import { mountGuide, type GuidePlayer } from './shared/guide-player';
 
 /* ───────────────────────────── sound ───────────────────────────── */
@@ -162,10 +162,10 @@ function renderPan(): void {
     pad.type = 'button';
     pad.className = `pad ring-${p.ring}`;
     Object.assign(pad.style, { left: `${p.x}%`, top: `${p.y}%`, width: `${p.w}%`, height: `${p.h}%` });
-    pad.setAttribute('aria-label', p.note.replace('#', ' sharp '));
+    pad.setAttribute('aria-label', spoken(flatName(p.note)));
     const label = document.createElement('span');
     label.className = 'lbl';
-    label.textContent = p.note;
+    label.textContent = flatName(p.note);
     pad.append(label);
     const key = NOTE_TO_KEY[p.note];
     if (key) {
@@ -212,7 +212,7 @@ function flashPad(note: string, cls = 'struck'): void {
 function hitPad(note: string): void {
   synth.strike(noteToFreq(note), 1);
   flashPad(note);
-  showLast(note);
+  showLast(flatName(note));
   player.checkHit(note);
 }
 
@@ -269,7 +269,7 @@ function init(): void {
       perform: (note, { velocity }) => {
         synth.strike(noteToFreq(note), velocity);
         flashPad(note);
-        showLast(note);
+        showLast(flatName(note));
       },
       showTarget: (note) => {
         padEls.forEach((pad) => pad.classList.remove('target'));
@@ -283,12 +283,15 @@ function init(): void {
         pad.classList.add('wrong');
         window.setTimeout(() => pad.classList.remove('wrong'), 320);
       },
+      // pan players spell the black notes as flats (B♭, E♭); songs still match by pitch
+      formatNote: flatName,
+      speakNote: (note) => spoken(flatName(note)),
       celebrate: (song: Song) => {
         song.notes.filter((n) => n.note !== REST).slice(0, 10)
           .forEach((n, k) => window.setTimeout(() => flashPad(n.note), 60 * k));
       },
     },
-    { instruction: ['Strike the ', 'glowing pad', ' to play each note.'], done: 'You played the whole song. Encore?' },
+    { instruction: ['Strike the ', 'glowing pad', ' to play each note.'], done: 'You played the whole song!' },
   );
 
   const names = $as<HTMLInputElement>('swNames');
