@@ -16,6 +16,14 @@ export interface Instrument {
   cta: string;
   /** Signature colour, used for hover states and links in the catalogue. */
   accent: string;
+  /** The instrument page's <title> (the site name is appended). */
+  pageTitle: string;
+  /** Alt text for the instrument's social card. */
+  imageAlt: string;
+  /** Browser chrome colour: the page background. */
+  themeColor: string;
+  /** Footer credit; may contain <b>. */
+  credit: string;
 }
 
 export const INSTRUMENTS: Instrument[] = [
@@ -38,6 +46,10 @@ export const INSTRUMENTS: Instrument[] = [
     ],
     cta: 'Play the steelpan',
     accent: '#f6b23c',
+    pageTitle: 'Steelpan — Play a Steel Drum Online',
+    imageAlt: 'A gleaming chrome steelpan with 25 note pads, one glowing amber, on a dark stage.',
+    themeColor: '#0b1315',
+    credit: 'Every note is <b>synthesized live</b> with the Web Audio API — no samples. All songs are <b>public-domain / traditional</b>.',
   },
   {
     slug: 'theremin',
@@ -58,6 +70,10 @@ export const INSTRUMENTS: Instrument[] = [
     ],
     cta: 'Play the theremin',
     accent: '#5cf2d6',
+    pageTitle: 'Aetherwave — Play a Theremin Online',
+    imageAlt: 'A glowing cyan oscilloscope waveform between two brass theremin antennas in the dark.',
+    themeColor: '#08080f',
+    credit: 'One continuous voice, <b>synthesized live</b> with the Web Audio API. All melodies are <b>public-domain / traditional</b>.',
   },
   {
     slug: 'kalimba',
@@ -78,6 +94,10 @@ export const INSTRUMENTS: Instrument[] = [
     ],
     cta: 'Play the kalimba',
     accent: '#ff8a4c',
+    pageTitle: 'Kalimba — Play a Thumb Piano Online',
+    imageAlt: 'A wooden 17-key kalimba with silver tines fanning out from the centre, one glowing ember-orange.',
+    themeColor: '#16100c',
+    credit: 'Every tine is <b>synthesized live</b> from cantilever-beam physics. All songs are <b>public-domain / traditional</b>.',
   },
   {
     slug: 'glass-harp',
@@ -98,6 +118,10 @@ export const INSTRUMENTS: Instrument[] = [
     ],
     cta: 'Play the glass harp',
     accent: '#b8a6ff',
+    pageTitle: 'Glass Harp — Play Singing Wine Glasses Online',
+    imageAlt: 'Rows of tuned crystal wine glasses on midnight velvet, one rim glowing violet as it sings.',
+    themeColor: '#0a0d16',
+    credit: 'Every glass is <b>synthesized live</b> — no recordings. All songs are <b>public-domain / traditional</b>.',
   },
   {
     slug: 'harp',
@@ -118,6 +142,10 @@ export const INSTRUMENTS: Instrument[] = [
     ],
     cta: 'Play the harp',
     accent: '#f3cf86',
+    pageTitle: 'Lever Harp — Play a Harp Online',
+    imageAlt: 'A walnut lever harp with fifteen strings — red C strings, blue F strings — one glowing gold as it is plucked.',
+    themeColor: '#140b0e',
+    credit: 'Every string is <b>physically modelled</b> with Karplus–Strong synthesis. All songs are <b>public-domain / traditional</b>.',
   },
 ];
 

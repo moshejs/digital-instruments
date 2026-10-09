@@ -1,0 +1,45 @@
+---
+/**
+ * Every instrument page — /steelpan/ and each song's own /steelpan/ode-to-joy/ —
+ * shares this shell: SEO, the instrument (the slot), the written lesson on song
+ * pages, and the footer. The scripts read data-song to preload the song.
+ */
+import Base from './Base.astro';
+import SongSheet from '../components/SongSheet.astro';
+import InstrumentFooter from '../components/InstrumentFooter.astro';
+import { instrumentBySlug, instrumentJsonLd, breadcrumbJsonLd } from '../data/instruments';
+import type { InstrumentSlug } from '../data/availability';
+import type { Song } from '../data/songs';
+import { pageDescription, pageTitle, songImage, songJsonLd } from '../data/song-pages';
+import { SITE, withBase } from '../lib/site';
+
+interface Props {
+  slug: InstrumentSlug;
+  song?: Song;
+}
+const { slug, song } = Astro.props;
+const inst = instrumentBySlug(slug);
+const site = Astro.site!;
+const url = new URL(Astro.url.pathname, site).href;
+const image = song ? songImage(slug, song.id) : `og/${slug}.png`;
+const imageUrl = new URL(withBase(image), site).href;
+const page = song ? { instrument: inst, song } : null;
+---
+
+<Base
+  title={page ? pageTitle(page) : `${inst.pageTitle} | ${SITE.name}`}
+  description={page ? pageDescription(page) : inst.description}
+  image={image}
+  imageAlt={song ? `${song.title}, on the ${inst.name.toLowerCase()}: the instrument with the song's first notes lit, and the notes written underneath.` : inst.imageAlt}
+  keywords={song ? [song.title, `${song.title} ${inst.name.toLowerCase()}`, ...inst.keywords] : inst.keywords}
+  jsonLd={page ? songJsonLd(page, url, imageUrl, site) : [instrumentJsonLd(inst, url, imageUrl), breadcrumbJsonLd(inst, url, site)]}
+  themeColor={inst.themeColor}
+  favicon={`favicon-${slug}.svg`}
+>
+  <main class="shell" id="main" data-instrument-path={withBase(`${slug}/`)} data-song={song?.id}>
+    <a class="skip-link" href="#songs">Skip to songs</a>
+    <slot />
+    {page && <SongSheet {...page} />}
+    <InstrumentFooter slug={slug}><Fragment set:html={inst.credit} /></InstrumentFooter>
+  </main>
+</Base>

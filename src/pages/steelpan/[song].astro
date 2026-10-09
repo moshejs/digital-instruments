@@ -1,0 +1,14 @@
+---
+/** One page per song this instrument can play, e.g. /steelpan/ode-to-joy/. */
+import InstrumentPage from '../../layouts/InstrumentPage.astro';
+import Steelpan from '../../instruments/Steelpan.astro';
+import { songsFor } from '../../data/song-pages';
+import type { Song } from '../../data/songs';
+
+export const getStaticPaths = () => songsFor('steelpan').map((song) => ({ params: { song: song.id }, props: { song } }));
+const { song } = Astro.props as { song: Song };
+---
+
+<InstrumentPage slug="steelpan" song={song}>
+  <Steelpan song={song} />
+</InstrumentPage>

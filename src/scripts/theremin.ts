@@ -743,8 +743,8 @@ function init(): void {
   $('power').addEventListener('click', powerOn);
 
   const buttons = renderSongList($('songList'), SONGS, (song) => {
+    if (setSongInUrl(song.id)) return; // opening that song's own page
     markActive(buttons, song.id);
-    setSongInUrl(song.id);
     powerOn();
     player.load(song);
   });
@@ -791,6 +791,7 @@ function init(): void {
   const linked = findSong(songIdFromUrl());
   if (linked) {
     markActive(buttons, linked.id);
+    setSongInUrl(linked.id);
     player.load(linked, { scroll: false });
   }
 }

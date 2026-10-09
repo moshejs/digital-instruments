@@ -4,11 +4,13 @@
  * Outputs are committed, so CI never needs to run this.
  */
 import { mkdir, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
+import { createServer } from 'vite';
 import { buildPads } from '../src/lib/steelpan-layout.ts';
 import { buildTines } from '../src/lib/kalimba-layout.ts';
 import { buildGlasses } from '../src/lib/glass-layout.ts';
-import { HARP_STRINGS, neckY, soundboardY, stringGeometry } from '../src/lib/harp.ts';
+import { HARP_STRINGS, fingeringsFor, neckY, soundboardY, stringGeometry } from '../src/lib/harp.ts';
 
 const OUT = new URL('../public/', import.meta.url);
 const pads = buildPads();
@@ -360,3 +362,100 @@ await writeFile(new URL('og/glass-harp.png', OUT), await png(ogGlass, 1200, 630)
 await writeFile(new URL('og/harp.png', OUT), await png(ogHarp, 1200, 630));
 
 console.log('Wrote favicons, app icons and Open Graph cards to /public');
+
+/* ───────── one card per song page (og/songs/<instrument>--<song>.png) ───────── */
+
+// The song data imports TypeScript without extensions, which Node can't resolve; Vite can.
+const vite = await createServer({
+  root: fileURLToPath(new URL('..', import.meta.url)),
+  configFile: false, appType: 'custom', logLevel: 'error',
+  server: { middlewareMode: true, hmr: false },
+});
+const { songPages, notate, songImage } = await vite.ssrLoadModule('/src/data/song-pages.ts');
+const { REST } = await vite.ssrLoadModule('/src/lib/music.ts');
+await vite.close();
+
+const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/** Each instrument's world: background, art (with some notes lit), colours and a line of copy. */
+const WORLDS = {
+  steelpan: {
+    bg: `<defs><radialGradient id="bg" cx="72%" cy="45%" r="60%"><stop offset="0" stop-color="#2a2414"/><stop offset=".6" stop-color="#0e1a1d"/><stop offset="1" stop-color="#0b1315"/></radialGradient></defs><rect width="1200" height="630" fill="url(#bg)"/>`,
+    art: (lit) => panSvg(900, 315, 245, lit, 'o'),
+    accent: '#f6b23c', title: '#e6eef0', sub: '#c9d4d1', label: 'STEELPAN', line: 'Steel drum notes · play along in your browser',
+  },
+  theremin: {
+    bg: `<defs><radialGradient id="bg" cx="70%" cy="110%" r="80%"><stop offset="0" stop-color="#0b2430"/><stop offset=".6" stop-color="#0c0c18"/><stop offset="1" stop-color="#08080f"/></radialGradient></defs><rect width="1200" height="630" fill="url(#bg)"/>`,
+    art: () => `<rect x="1108" y="88" width="5" height="460" rx="2.5" fill="#d8a24a"/><circle cx="1110.5" cy="86" r="9" fill="#d8a24a"/>${waveSvg(660, 1090, 330, 110, 5.5, 'og', 4)}`,
+    accent: '#5cf2d6', title: '#e9ecff', sub: '#b9bde0', label: 'THEREMIN', line: 'Theremin play-along · no touching required',
+  },
+  kalimba: {
+    bg: `<defs><radialGradient id="bg" cx="70%" cy="40%" r="65%"><stop offset="0" stop-color="#3a2212"/><stop offset=".6" stop-color="#1e1610"/><stop offset="1" stop-color="#16100c"/></radialGradient></defs><rect width="1200" height="630" fill="url(#bg)"/>`,
+    art: (lit) => kalimbaSvg(680, 96, 460, lit, 'ok'),
+    accent: '#ff8a4c', title: '#f1c38f', sub: '#d9c6b2', label: 'KALIMBA', line: 'Kalimba number tabs · play along in your browser',
+  },
+  'glass-harp': {
+    bg: `<defs><radialGradient id="bg" cx="70%" cy="0%" r="80%"><stop offset="0" stop-color="#2a2552"/><stop offset=".6" stop-color="#121633"/><stop offset="1" stop-color="#0a0d16"/></radialGradient></defs><rect width="1200" height="630" fill="url(#bg)"/>`,
+    art: (lit) => `${glassesSvg(640, 500, 540, lit, 'og')}<rect x="620" y="500" width="580" height="6" fill="rgba(255,255,255,.06)"/>`,
+    accent: '#b8a6ff', title: '#f2efff', sub: '#b9c2dc', label: 'GLASS HARP', line: 'Singing glasses · play along in your browser',
+  },
+  harp: {
+    bg: `<defs><radialGradient id="bg" cx="75%" cy="30%" r="70%"><stop offset="0" stop-color="#3a1a1f"/><stop offset=".6" stop-color="#1c1014"/><stop offset="1" stop-color="#140b0e"/></radialGradient></defs><rect width="1200" height="630" fill="url(#bg)"/>`,
+    art: (lit) => harpSvg(700, 84, 0.52, lit.map((n) => fingeringsFor(n)[0]?.index).filter((i) => i !== undefined), 'oh'),
+    accent: '#f3cf86', title: '#fff1c9', sub: '#d8bfb6', label: 'LEVER HARP', line: 'Harp notes and levers · play along',
+  },
+};
+
+/** Greedy word wrap into at most `max` lines of about `width` characters. */
+function wrap(text, width, max = 3) {
+  const lines = [];
+  // keep a parenthetical together: "(DANNY BOY)" never splits
+  const words = text.replace(/\(([^)]*)\)/g, (m) => m.replace(/ /g, '\u00a0')).split(' ');
+  for (const word of words) {
+    const last = lines[lines.length - 1];
+    if (last && (last + ' ' + word).length <= width) lines[lines.length - 1] = `${last} ${word}`;
+    else lines.push(word);
+  }
+  return lines.length > max ? [...lines.slice(0, max - 1), lines.slice(max - 1).join(' ')] : lines;
+}
+
+/** The first notes, in the instrument's notation; kalimba octave dots are drawn, not typed. */
+function notesRow(slug, song, x, y, color) {
+  const notes = song.notes.filter((n) => n.note !== REST).slice(0, 8);
+  return notes.map((n, k) => {
+    const cx = x + k * 62;
+    if (slug === 'kalimba') {
+      const label = notate(slug, n.note);
+      const digit = label[0];
+      const dots = label.length - 1 === 0 ? 0 : label.includes('̈') ? 2 : 1;
+      const dotSvg = Array.from({ length: dots }, (_, d) => `<circle cx="${cx + 9 + (dots === 2 ? (d ? 6 : -6) : 0)}" cy="${y - 30}" r="3.4" fill="${color}"/>`).join('');
+      return `<text x="${cx}" y="${y}" font-family="${MONO}" font-size="32" fill="${color}">${digit}</text>${dotSvg}`;
+    }
+    return `<text x="${cx}" y="${y}" font-family="${MONO}" font-size="${notate(slug, n.note).length > 2 ? 24 : 28}" fill="${color}">${esc(notate(slug, n.note))}</text>`;
+  }).join('');
+}
+
+function songCard({ instrument, song }) {
+  const w = WORLDS[instrument.slug];
+  const lit = [...new Set(song.notes.filter((n) => n.note !== REST).map((n) => n.note))].slice(0, 3);
+  const lines = wrap(song.title.toUpperCase(), 13);
+  const longest = Math.max(...lines.map((l) => l.length));
+  const size = Math.min(104, Math.floor(1060 / longest), lines.length === 3 ? 84 : 104);
+  const top = 118 + 24 + size * 0.86;
+  const title = lines.map((l, i) => `<text x="66" y="${top + i * size * 0.98}" font-family="${DISPLAY}" font-weight="800" font-size="${size}" fill="${i === lines.length - 1 ? w.accent : w.title}" letter-spacing="1">${esc(l)}</text>`).join('');
+  const after = top + (lines.length - 1) * size * 0.98;
+  return card(w.bg, `${w.art(lit)}
+    <text x="72" y="118" font-family="${MONO}" font-size="22" fill="${w.accent}" letter-spacing="6">LEARN IT ON THE ${w.label}</text>
+    ${title}
+    <text x="72" y="${after + 52}" font-family="${SANS}" font-size="26" fill="${w.sub}">${esc(w.line)}</text>
+    ${notesRow(instrument.slug, song, 72, after + 116, '#f6ede3')}
+    ${footer(w.accent)}`);
+}
+
+await mkdir(new URL('og/songs/', OUT), { recursive: true });
+const pages = songPages();
+for (const page of pages) {
+  await writeFile(new URL(songImage(page.instrument.slug, page.song.id), OUT), await png(songCard(page), 1200, 630));
+}
+console.log(`Wrote ${pages.length} song cards to /public/og/songs`);
+

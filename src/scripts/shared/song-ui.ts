@@ -100,15 +100,30 @@ export class NoteStrip {
   }
 }
 
-/** Deep links: ?song=amazing-grace preloads a song. */
+/**
+ * The song to preload: the page's own song (/steelpan/ode-to-joy/), or an
+ * older ?song=ode-to-joy link.
+ */
 export function songIdFromUrl(): string | null {
-  return new URLSearchParams(window.location.search).get('song');
+  return document.getElementById('main')?.dataset.song ?? new URLSearchParams(window.location.search).get('song');
 }
 
-export function setSongInUrl(id: string): void {
-  const url = new URL(window.location.href);
-  url.searchParams.set('song', id);
-  window.history.replaceState(null, '', url);
+/**
+ * Points the address bar at the song's own page, so it can be shared. On a
+ * song page, picking a different song opens that song's page instead (its
+ * written lesson would otherwise describe the wrong song); returns true then.
+ */
+export function setSongInUrl(id: string): boolean {
+  const main = document.getElementById('main');
+  const root = main?.dataset.instrumentPath;
+  if (!root) return false;
+  const path = `${root}${id}/`;
+  if (main.dataset.song && main.dataset.song !== id) {
+    window.location.assign(path);
+    return true;
+  }
+  if (window.location.pathname !== path) window.history.replaceState(null, '', path);
+  return false;
 }
 
 export function setFeedback(node: HTMLElement, kind: 'good' | 'bad' | 'info', ...parts: (string | Node)[]): void {

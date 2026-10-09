@@ -1,0 +1,80 @@
+---
+/**
+ * The written lesson under a song's page: how to learn it here, and every note
+ * in the instrument's own notation. Plain HTML, so it reads without JavaScript.
+ */
+import type { Instrument } from '../data/instruments';
+import type { Song } from '../data/songs';
+import { REST } from '../lib/music';
+import { playableCount } from '../data/songs';
+import { harpLevers, instrumentsFor, lessonCopy, notate, phrases, songPath } from '../data/song-pages';
+import { withBase } from '../lib/site';
+
+interface Props {
+  instrument: Instrument;
+  song: Song;
+}
+const { instrument, song } = Astro.props;
+const slug = instrument.slug;
+const name = instrument.name.toLowerCase();
+const copy = lessonCopy(slug);
+const lines = phrases(song);
+const levers = slug === 'harp' ? harpLevers(song) : null;
+const elsewhere = instrumentsFor(song).filter((i) => i.slug !== slug);
+const verb = slug === 'theremin' ? 'Follow the band' : 'Play along';
+---
+
+<section class="lesson" id="lesson" aria-labelledby="lesson-title">
+  <div class="lesson-head">
+    <h2 id="lesson-title">How to play {song.title} on the {name}</h2>
+    <p class="lede">{song.description} <span class="origin">{song.origin}.</span></p>
+    <dl class="facts">
+      <div><dt>Key</dt><dd>{song.key}</dd></div>
+      <div><dt>Time</dt><dd>{song.timeSignature}</dd></div>
+      <div><dt>Tempo</dt><dd>{song.tempo} BPM</dd></div>
+      <div><dt>Notes</dt><dd>{playableCount(song)}</dd></div>
+      <div><dt>Level</dt><dd>{song.difficulty}</dd></div>
+    </dl>
+  </div>
+
+  <ol class="steps">
+    <li><b>Listen.</b> Press <i>Listen</i> above to hear it{slug === 'theremin' ? '' : ` at ${song.tempo} BPM. You can slow it down in Settings`}.</li>
+    {slug === 'theremin'
+      ? <li><b>{verb}.</b> Press <i>Play along</i> and a band shows where your hand needs to be. Hold the pitch inside it, and the band moves to the next note in time with the song.</li>
+      : <li><b>{verb}.</b> Press <i>Play along</i> and {copy.target} lights up. Play it and the next one lights. A wrong note is named, so you know what to change.</li>}
+    <li><b>Play it from the notes.</b> Once it feels familiar, play it from the sheet below without the lights.</li>
+  </ol>
+
+  {levers && (
+    <p class="levers">
+      <b>Levers:</b> {levers.raised.length ? `${levers.raised.join(', ')} raised` : 'all down (E♭ tuning)'}
+      {levers.flips > 0 ? ` · ${levers.flips} lever ${levers.flips === 1 ? 'flip' : 'flips'} during the song` : ' · no flips needed during the song'}.
+    </p>
+  )}
+  <p class="tip">{copy.tip}</p>
+
+  <h3>The notes</h3>
+  <p class="sheet-note">Written as {slug === 'harp' ? 'note names (the lever settings are above)' : copy.notation}{slug === 'kalimba' ? ', with letter names underneath' : ''}. A dot (·) is a rest.</p>
+  <ol class="sheet" aria-label={`${song.title}, ${copy.notation}`}>
+    {lines.map((line) => (
+      <li>
+        {line.map((n) => (
+          <span class={n.note === REST ? 'tok rest' : 'tok'}>
+            <b>{notate(slug, n.note)}</b>
+            {slug === 'kalimba' && n.note !== REST && <small>{n.note.replace('#', '♯')}</small>}
+            <i>{n.lyric || ' '}</i>
+          </span>
+        ))}
+      </li>
+    ))}
+  </ol>
+
+  {elsewhere.length > 0 && (
+    <nav class="elsewhere" aria-labelledby="elsewhere-title">
+      <h3 id="elsewhere-title">{song.title} on other instruments</h3>
+      <ul>
+        {elsewhere.map((i) => <li><a href={withBase(songPath(i.slug, song.id))} style={`--to:${i.accent}`}>{i.name}</a></li>)}
+      </ul>
+    </nav>
+  )}
+</section>

@@ -1,0 +1,58 @@
+---
+/** The glass-harp itself: its header, the playable instrument, coach, songs and settings. */
+import CoachBand from '../components/CoachBand.astro';
+import SongLibrary from '../components/SongLibrary.astro';
+import SettingsCard from '../components/SettingsCard.astro';
+import '../styles/instrument.css';
+import '../styles/glass-harp.css';
+import type { Song } from '../data/songs';
+
+interface Props {
+  /** Set on a song's own page: the song is preloaded and named in the heading. */
+  song?: Song;
+}
+const { song } = Astro.props;
+---
+
+<header class="top">
+  <div class="brand">
+    <h1 class="title">{song && <span class="kicker">Learn {song.title} on the </span>}Glass Harp</h1>
+    <p class="tag">Musical glasses, as Benjamin Franklin heard them. <b>Press and circle a rim</b> to make a glass sing — faster circles sing louder, several fingers make chords. More water, lower note.</p>
+  </div>
+  <div class="head-controls">
+    <div class="readout" hidden><span class="n" id="lastNote">—</span><span class="h">last glass</span></div>
+  </div>
+</header>
+
+<div class="practice wide">
+  <section class="stage" aria-label="Glass harp">
+    <div class="table-scroll">
+      <div class="table" id="table">
+        <span class="rub-hint" aria-hidden="true">press · circle · listen</span>
+      </div>
+    </div>
+    <div class="stage-foot">
+      <span>Tap for a <b>ting</b> · circle for a <b>song</b> · lift to let it ring</span>
+      <span class="kbd-hint">Hold keys like a piano: <kbd>Z</kbd> <kbd>S</kbd> <kbd>X</kbd> … <kbd>Q</kbd> <kbd>2</kbd> <kbd>W</kbd> …</span>
+      <span class="touch-hint">Swipe the empty top of the table to reach every glass.</span>
+    </div>
+    <noscript><p class="stage-foot">The glass harp needs JavaScript to make sound.</p></noscript>
+  </section>
+
+  <CoachBand idle="Pick a song to practise, or just make the glasses sing." />
+
+  <div class="lower">
+    <SongLibrary />
+    <SettingsCard>
+      <div class="row">
+        <label for="swNames">Note names under glasses</label>
+        <span class="switch"><input type="checkbox" id="swNames" checked /><span class="track"></span><span class="knob"></span></span>
+      </div>
+      <Fragment slot="legend"><span><i class="a"></i>singing</span><span><i class="t"></i>play this next</span></Fragment>
+    </SettingsCard>
+  </div>
+</div>
+
+<script>
+  import '../scripts/glass-harp.ts';
+</script>

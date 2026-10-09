@@ -1,6 +1,7 @@
 ---
 import { INSTRUMENTS, type Instrument } from '../data/instruments';
 import { withBase } from '../lib/site';
+import { songPath, songsFor } from '../data/song-pages';
 
 interface Props {
   slug: Instrument['slug'];
@@ -8,9 +9,20 @@ interface Props {
 const i = INSTRUMENTS.findIndex((inst) => inst.slug === Astro.props.slug);
 const prev = INSTRUMENTS[(i - 1 + INSTRUMENTS.length) % INSTRUMENTS.length];
 const next = INSTRUMENTS[(i + 1) % INSTRUMENTS.length];
+const here = INSTRUMENTS[i];
+const current = Astro.url.pathname;
 ---
 
 <footer class="foot">
+  <nav class="song-nav" aria-labelledby="song-nav-title">
+    <h2 id="song-nav-title">Learn a song on the {here.name.toLowerCase()}</h2>
+    <ul>
+      {songsFor(here.slug).map((song) => {
+        const href = withBase(songPath(here.slug, song.id));
+        return <li><a href={href} aria-current={href === current ? 'page' : undefined}>{song.title}</a></li>;
+      })}
+    </ul>
+  </nav>
   <p><slot /></p>
   <nav class="cat-nav" aria-label="More instruments">
     <a href={withBase(`${prev.slug}/`)}>← {prev.catalogNo} {prev.name}</a>

@@ -27,7 +27,7 @@ Five real instruments, synthesized note by note in your browser. No samples, no 
 
 - 🎵 **Nine public-domain songs** — Twinkle Twinkle, Mary Had a Little Lamb, Ode to Joy, When the Saints Go Marching In, Amazing Grace, Oh! Susanna, Greensleeves, Scarborough Fair and Londonderry Air (Danny Boy).
 - ▶ **Listen** plays the tune; ◎ **Play Along** lights the next pad, tine, glass or string (or sweeps a target across the theremin and scores how long you stay on pitch).
-- 🔗 **Deep links** — `/harp/?song=greensleeves` opens an instrument with a song ready.
+- 🔗 **A page for every song on every instrument** — `/kalimba/ode-to-joy/` opens the kalimba with the song ready, followed by a written lesson with every note in that instrument's notation (kalimba tabs, flats on the pan, lever settings on the harp). Old `?song=` links still work.
 - Each instrument only offers songs it can really play: the C-major kalimba explains which ones need sharps or flats. The harp sets its levers for each song's key and flips them mid-song when a melody needs it (Greensleeves uses both G and G♯).
 
 Every melody was transcribed, then independently re-derived note by note by a second pass that corrected errors before they shipped.
@@ -49,14 +49,15 @@ npm run icons      # regenerate favicons, app icons and social cards
 
 ```
 src/
-  data/        songs.ts (shared songbook) · instruments.ts (catalogue, structured data) · availability.ts (which songs fit which instrument)
+  data/        songs.ts (shared songbook) · instruments.ts (catalogue, structured data) · availability.ts (which songs fit which instrument) · song-pages.ts (song pages: notation, copy, JSON-LD)
   lib/         music.ts · keyboard.ts · steelpan-layout.ts · theremin-field.ts · kalimba-layout.ts · glass-layout.ts · harp.ts (levers + geometry) · audio.ts · site.ts
   scripts/     one engine per instrument · shared/guide-player.ts (Listen / Play Along) · shared/song-ui.ts
-  components/  SiteNav · SongPanel · InstrumentFooter
-  layouts/     Base.astro — SEO, Open Graph, Twitter cards, JSON-LD, icons
-  pages/       index · steelpan · theremin · kalimba · glass-harp · harp · 404
+  instruments/ one component per instrument: its header, stage, coach, songs and settings
+  components/  SiteNav · CoachBand · SongLibrary · SettingsCard · SongSheet (the written lesson) · InstrumentFooter
+  layouts/     Base.astro — SEO, Open Graph, Twitter cards, JSON-LD, icons · InstrumentPage.astro — shared instrument page shell
+  pages/       index · <instrument>/index · <instrument>/[song] · llms.txt · 404
   styles/      instrument.css (shared shell + panel, themed by tokens) · one stylesheet per instrument
-scripts/       generate-images.mjs — renders every icon and social card from the same layout code
+scripts/       generate-images.mjs — renders every icon and social card (including one per song page) from the same layout code
 tests/         note math, songbook, layouts, availability and harp lever logic
 ```
 
@@ -65,12 +66,15 @@ tests/         note math, songbook, layouts, availability and harp lever logic
 1. Add its layout/logic to `src/lib/` and its slug to `InstrumentSlug` and `canPlay` in `src/data/availability.ts`.
 2. Add catalogue metadata to `src/data/instruments.ts`.
 3. Write an engine in `src/scripts/` and call `mountGuide(slug, host, copy)` — the `GuideHost` only needs `unlock`, `perform` and `showTarget`.
-4. Create `src/pages/<slug>.astro` with `SongPanel` and `InstrumentFooter`, and a stylesheet that sets the shared colour tokens.
+4. Create `src/instruments/<Name>.astro` (header, stage, `CoachBand`, `SongLibrary`, `SettingsCard`) and a stylesheet that sets the shared colour tokens, then `src/pages/<slug>/index.astro` and `[song].astro` that wrap it in `InstrumentPage`. Add its lesson copy to `COPY` in `src/data/song-pages.ts`.
 5. Draw its favicon and card in `scripts/generate-images.mjs`, then `npm run icons`.
 
 ### SEO and sharing
 
-Per-page titles, descriptions, canonical URLs and keywords; Open Graph and Twitter cards with 1200×630 images; schema.org JSON-LD (`WebSite`, `WebApplication`, `BreadcrumbList`, `ItemList`); a sitemap, `robots.txt`, per-instrument SVG favicons, PNG/ICO fallbacks, an Apple touch icon and an installable web manifest with shortcuts to each instrument.
+- **42 song pages** that search engines can read without JavaScript, each with its own title, description, canonical URL and 1200×630 card (`public/og/songs/`). Song links are plain `<a>` tags, in the footer of every instrument page and in the home page songbook.
+- Open Graph and Twitter cards on every page; schema.org JSON-LD (`WebSite`, `ItemList`, `WebApplication`, `LearningResource` + `MusicComposition`, `BreadcrumbList`).
+- A sitemap with `lastmod` (taken from the last commit), `robots.txt`, and [`/llms.txt`](https://moshejs.github.io/digital-instruments/llms.txt) for AI assistants.
+- Per-instrument SVG favicons, PNG/ICO fallbacks, an Apple touch icon and an installable web manifest with shortcuts to each instrument.
 
 ### Deployment
 

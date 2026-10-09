@@ -1,0 +1,64 @@
+---
+/** The steelpan itself: its header, the playable instrument, coach, songs and settings. */
+import CoachBand from '../components/CoachBand.astro';
+import SongLibrary from '../components/SongLibrary.astro';
+import SettingsCard from '../components/SettingsCard.astro';
+import Icon from '../components/Icon.astro';
+import '../styles/instrument.css';
+import '../styles/steelpan.css';
+import type { Song } from '../data/songs';
+
+interface Props {
+  /** Set on a song's own page: the song is preloaded and named in the heading. */
+  song?: Song;
+}
+const { song } = Astro.props;
+---
+
+<header class="top">
+  <div class="brand">
+    <h1 class="title">{song && <span class="kicker">Learn {song.title} on the </span>}Steel<span class="accent">pan</span></h1>
+    <p class="tag">The tenor pan of Trinidad &amp; Tobago, <b>synthesized live</b> in your browser. Strike the chrome — or pick a song and <b>follow the lights</b>.</p>
+  </div>
+  <div class="head-controls">
+    <div class="readout" hidden><span class="n" id="lastNote">—</span><span class="h">last struck</span></div>
+    <button class="theme-toggle" id="themeToggle" type="button">
+      <span id="iconSun"><Icon name="sun" /></span><span id="iconMoon" hidden><Icon name="moon" /></span>
+      <span id="themeLabel">Switch to daylight</span>
+    </button>
+  </div>
+</header>
+
+<div class="practice side">
+  <section class="stage" aria-label="Steelpan">
+    <div class="pan-wrap">
+      <div class="pan" id="pan"></div>
+      <div class="pads" id="pads"></div>
+    </div>
+    <div class="stage-foot">
+      <span class="kbd-hint">Play like a piano: <kbd>Z</kbd> <kbd>X</kbd> <kbd>C</kbd> … for the low octave, <kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd> … for the high one</span>
+      <span class="touch-hint">Tap a pad to strike it. Low notes sit on the rim, high notes toward the centre.</span>
+    </div>
+    <noscript><p class="stage-foot">The steelpan needs JavaScript to make sound.</p></noscript>
+  </section>
+
+  <div class="rail">
+    <CoachBand idle="Pick a song to practise, or just strike the pan." />
+    <SongLibrary />
+    <SettingsCard>
+      <div class="row">
+        <label for="swNames">Note names on pads</label>
+        <span class="switch"><input type="checkbox" id="swNames" checked /><span class="track"></span><span class="knob"></span></span>
+      </div>
+      <div class="row kbd-hint">
+        <label for="swKeys">Keyboard keys on pads</label>
+        <span class="switch"><input type="checkbox" id="swKeys" /><span class="track"></span><span class="knob"></span></span>
+      </div>
+      <Fragment slot="legend"><span><i class="a"></i>sounding</span><span><i class="t"></i>play this next</span></Fragment>
+    </SettingsCard>
+  </div>
+</div>
+
+<script>
+  import '../scripts/steelpan.ts';
+</script>

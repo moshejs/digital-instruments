@@ -296,8 +296,8 @@ export class GuidePlayer {
 export function mountGuide(slug: InstrumentSlug, host: GuideHost, copy: GuideCopy): GuidePlayer {
   const player = new GuidePlayer(host, copy);
   const pick = (song: Song) => {
+    if (setSongInUrl(song.id)) return; // opening that song's own page
     markActive(buttons, song.id);
-    setSongInUrl(song.id);
     host.unlock();
     player.load(song);
   };
@@ -335,6 +335,7 @@ export function mountGuide(slug: InstrumentSlug, host: GuideHost, copy: GuideCop
   const linked = findSong(songIdFromUrl());
   if (linked && !unavailableReason(slug, linked)) {
     markActive(buttons, linked.id);
+    setSongInUrl(linked.id);
     player.load(linked, { scroll: false });
   }
   return player;

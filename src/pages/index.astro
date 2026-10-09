@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import { INSTRUMENTS, fullName } from '../data/instruments';
 import { SONGS, findSong } from '../data/songs';
 import { unavailableReason } from '../data/availability';
+import { songPath } from '../data/song-pages';
 import { buildPads } from '../lib/steelpan-layout';
 import { buildTines } from '../lib/kalimba-layout';
 import { buildGlasses } from '../lib/glass-layout';
@@ -149,7 +150,7 @@ const jsonLd = [
                     const reason = unavailableReason(inst.slug, s);
                     return reason
                       ? <span class="go na" title={`${inst.name}: ${reason}`}>{inst.short}<span class="sr-only"> — not available: {reason}</span></span>
-                      : <a class="go" style={`--go:${inst.accent}`} href={`${withBase(`${inst.slug}/`)}?song=${s.id}`} aria-label={`Play ${s.title} on the ${inst.name.toLowerCase()}`}>{inst.short}</a>;
+                      : <a class="go" style={`--go:${inst.accent}`} href={withBase(songPath(inst.slug, s.id))} aria-label={`Play ${s.title} on the ${inst.name.toLowerCase()}`}>{inst.short}</a>;
                   })}
                 </td>
               </tr>

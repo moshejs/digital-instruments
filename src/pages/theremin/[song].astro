@@ -1,0 +1,14 @@
+---
+/** One page per song this instrument can play, e.g. /theremin/ode-to-joy/. */
+import InstrumentPage from '../../layouts/InstrumentPage.astro';
+import Theremin from '../../instruments/Theremin.astro';
+import { songsFor } from '../../data/song-pages';
+import type { Song } from '../../data/songs';
+
+export const getStaticPaths = () => songsFor('theremin').map((song) => ({ params: { song: song.id }, props: { song } }));
+const { song } = Astro.props as { song: Song };
+---
+
+<InstrumentPage slug="theremin" song={song}>
+  <Theremin song={song} />
+</InstrumentPage>

@@ -1,0 +1,14 @@
+---
+/** One page per song this instrument can play, e.g. /glass-harp/ode-to-joy/. */
+import InstrumentPage from '../../layouts/InstrumentPage.astro';
+import GlassHarp from '../../instruments/GlassHarp.astro';
+import { songsFor } from '../../data/song-pages';
+import type { Song } from '../../data/songs';
+
+export const getStaticPaths = () => songsFor('glass-harp').map((song) => ({ params: { song: song.id }, props: { song } }));
+const { song } = Astro.props as { song: Song };
+---
+
+<InstrumentPage slug="glass-harp" song={song}>
+  <GlassHarp song={song} />
+</InstrumentPage>
