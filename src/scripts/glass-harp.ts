@@ -10,7 +10,7 @@ import { noteToFreq } from '../lib/music';
 import { createAudioContext, makeImpulse, makeNoise } from '../lib/audio';
 import { buildGlasses } from '../lib/glass-layout';
 import { PIANO_KEYMAP, invertKeymap } from '../lib/keyboard';
-import { $, capture } from './shared/song-ui';
+import { $, capture, showLast } from './shared/song-ui';
 import { mountGuide, type GuidePlayer } from './shared/guide-player';
 
 /* ───────────────────────────── sound ───────────────────────────── */
@@ -213,7 +213,7 @@ function startRub(id: number, note: string, x: number, y: number): void {
   const rub: Rub = { note, voice: new GlassVoice(noteToFreq(note)), x, y, t: performance.now(), moved: 0, level: 0, sungMs: 0, counted: false };
   rubs.set(id, rub);
   setSinging(note, +1, 0);
-  $('lastNote').textContent = note.replace('#', '♯');
+  showLast(note.replace('#', '♯'));
 }
 
 function moveRub(id: number, x: number, y: number): void {
@@ -275,7 +275,7 @@ function keySing(id: string, note: string): void {
   voice.setLevel(0.7, 0.12);
   keyVoices.set(id, { note, voice });
   setSinging(note, +1, 0.7);
-  $('lastNote').textContent = note.replace('#', '♯');
+  showLast(note.replace('#', '♯'));
   player.checkHit(note);
 }
 
@@ -309,7 +309,7 @@ function perform(note: string, durationMs: number, velocity: number): void {
   autoVoices.add(voice);
   voice.setLevel(0.75 * velocity, 0.06);
   setSinging(note, +1, 0.75);
-  $('lastNote').textContent = note.replace('#', '♯');
+  showLast(note.replace('#', '♯'));
   window.setTimeout(() => {
     voice.release();
     autoVoices.delete(voice);

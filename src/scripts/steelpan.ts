@@ -8,7 +8,7 @@ import { createAudioContext, makeImpulse, makeNoise } from '../lib/audio';
 import { buildPads } from '../lib/steelpan-layout';
 import { PIANO_KEYMAP, invertKeymap } from '../lib/keyboard';
 import type { Song } from '../data/songs';
-import { $, $as } from './shared/song-ui';
+import { $, $as, showLast } from './shared/song-ui';
 import { mountGuide, type GuidePlayer } from './shared/guide-player';
 
 /* ───────────────────────────── sound ───────────────────────────── */
@@ -212,7 +212,7 @@ function flashPad(note: string, cls = 'struck'): void {
 function hitPad(note: string): void {
   synth.strike(noteToFreq(note), 1);
   flashPad(note);
-  $('freeNote').textContent = note;
+  showLast(note);
   player.checkHit(note);
 }
 
@@ -225,10 +225,12 @@ function initTheme(): void {
   const current = (): 'light' | 'dark' =>
     (root.dataset.theme as 'light' | 'dark' | undefined) ??
     (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  // the button names the action it will take, not the current state
   const apply = (theme: 'light' | 'dark') => {
     root.dataset.theme = theme;
-    $('themeIcon').textContent = theme === 'dark' ? '◐' : '☀';
-    $('themeLabel').textContent = theme === 'dark' ? 'Stage' : 'Daylight';
+    $('iconSun').hidden = theme === 'light';
+    $('iconMoon').hidden = theme === 'dark';
+    $('themeLabel').textContent = theme === 'dark' ? 'Switch to daylight' : 'Switch to stage lights';
   };
   try {
     const saved = localStorage.getItem(THEME_KEY);
@@ -267,7 +269,7 @@ function init(): void {
       perform: (note, { velocity }) => {
         synth.strike(noteToFreq(note), velocity);
         flashPad(note);
-        $('freeNote').textContent = note;
+        showLast(note);
       },
       showTarget: (note) => {
         padEls.forEach((pad) => pad.classList.remove('target'));

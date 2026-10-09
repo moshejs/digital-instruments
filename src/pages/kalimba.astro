@@ -1,6 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
-import SongPanel from '../components/SongPanel.astro';
+import CoachBand from '../components/CoachBand.astro';
+import SongLibrary from '../components/SongLibrary.astro';
+import SettingsCard from '../components/SettingsCard.astro';
 import InstrumentFooter from '../components/InstrumentFooter.astro';
 import '../styles/instrument.css';
 import '../styles/kalimba.css';
@@ -22,18 +24,20 @@ const image = new URL(withBase('og/kalimba.png'), Astro.site).href;
   themeColor="#16100c"
   favicon="favicon-kalimba.svg"
 >
-  <div class="shell">
+  <main class="shell" id="main">
+    <a class="skip-link" href="#songs">Skip to songs</a>
     <header class="top">
       <div class="brand">
-        <div class="eyebrow">{inst.catalogNo} · Thumb piano</div>
         <h1 class="title">Kalimba</h1>
-        <p class="tag">Seventeen steel tines on a hollow wooden board. <b>Tap a tine</b> — or sweep across them — and read songs in real <b>kalimba number tabs</b>.</p>
+        <p class="tag">A thumb piano: seventeen steel tines on a hollow wooden board. <b>Tap a tine</b> or sweep across them, and read songs in real <b>kalimba number tabs</b>.</p>
       </div>
-      <div class="readout" aria-live="off"><span class="n" id="lastNote">—</span><span class="h">last tine</span></div>
+      <div class="head-controls">
+        <div class="readout" hidden><span class="n" id="lastNote">—</span><span class="h">last tine</span></div>
+      </div>
     </header>
 
-    <div class="grid">
-      <section class="stage" aria-label="Kalimba — tap the tines or use the number keys">
+    <div class="practice side">
+      <section class="stage" aria-label="Kalimba">
         <div class="kalimba-wrap">
           <div class="board" aria-hidden="true"></div>
           <div class="saddle" aria-hidden="true"></div>
@@ -44,32 +48,37 @@ const image = new URL(withBase('og/kalimba.png'), Astro.site).href;
           <span class="thumb-hint r" aria-hidden="true">right thumb</span>
         </div>
         <div class="stage-foot">
-          <span>Low notes in the middle, climbing outward — left, right, left.</span>
-          <span>Keys <kbd>1</kbd>–<kbd>7</kbd> · <kbd>Q</kbd>–<kbd>U</kbd> · <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></span>
+          <span>The lowest note is in the middle; the scale climbs outward — left, right, left.</span>
+          <span class="kbd-hint">Keys <kbd>1</kbd>–<kbd>7</kbd>, <kbd>Q</kbd>–<kbd>U</kbd>, <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></span>
+          <span class="touch-hint">Turn your phone sideways for wider tines.</span>
         </div>
         <noscript><p class="stage-foot">The kalimba needs JavaScript to make sound.</p></noscript>
       </section>
 
-      <SongPanel intro="Pick a tune. Songs with sharps or flats need a chromatic kalimba, so they're greyed out here.">
-        <div class="row" slot="controls">
-          <span class="label" id="notationLabel">Tine labels</span>
-          <span class="seg" role="group" aria-labelledby="notationLabel">
-            <button type="button" data-notation="numbers" aria-pressed="true">1 2 3</button>
-            <button type="button" data-notation="letters" aria-pressed="false">C D E</button>
-          </span>
-        </div>
-        <div class="row" slot="controls">
-          <label for="swKeys">Show keyboard keys</label>
-          <span class="switch"><input type="checkbox" id="swKeys" /><span class="track"></span><span class="knob"></span></span>
-        </div>
-        <Fragment slot="legend"><span><i class="a"></i>ringing tine</span><span><i class="t"></i>play this next</span><span>dots = higher octave</span></Fragment>
-      </SongPanel>
+      <div class="rail">
+        <CoachBand idle="Pick a song to practise, or just pluck the tines. Songs with sharps or flats need a chromatic kalimba." />
+        <SongLibrary />
+        <SettingsCard>
+          <div class="row">
+            <span class="label" id="notationLabel">Tine labels</span>
+            <span class="seg" role="group" aria-labelledby="notationLabel">
+              <button type="button" data-notation="numbers" aria-pressed="true">1 2 3</button>
+              <button type="button" data-notation="letters" aria-pressed="false">C D E</button>
+            </span>
+          </div>
+          <div class="row kbd-hint">
+            <label for="swKeys">Keyboard keys on tines</label>
+            <span class="switch"><input type="checkbox" id="swKeys" /><span class="track"></span><span class="knob"></span></span>
+          </div>
+          <Fragment slot="legend"><span><i class="a"></i>ringing</span><span><i class="t"></i>play this next</span><span>Dots mark higher octaves</span></Fragment>
+        </SettingsCard>
+      </div>
     </div>
 
     <InstrumentFooter slug="kalimba">
       Every tine is <b>synthesized live</b> from cantilever-beam physics. All songs are <b>public-domain / traditional</b>.
     </InstrumentFooter>
-  </div>
+  </main>
 </Base>
 
 <script>

@@ -1,14 +1,16 @@
 /**
  * The Listen / Play Along engine for note-based instruments (steelpan, kalimba,
  * glass harp, harp). Each instrument supplies a GuideHost that knows how to make
- * sound and light itself up; this module owns the song panel and the guide logic.
- *
- * It drives the panel rendered by SongPanel.astro (element ids below).
+ * sound and light itself up; this module owns the coach, the library and the
+ * guide logic. It drives CoachBand.astro, SongLibrary.astro and SettingsCard.astro.
  */
 import { REST } from '../../lib/music';
 import { SONGS, findSong, playableCount, type Song } from '../../data/songs';
 import { unavailableReason, type InstrumentSlug } from '../../data/availability';
-import { $, $as, NoteStrip, b, markActive, renderSongList, setFeedback, setSongInUrl, songIdFromUrl } from './song-ui';
+import {
+  $, $as, NoteStrip, announce, b, enterPractice, initLibraryToggle, isOperatingControl, markActive,
+  renderSongList, setFeedback, setProgressBar, setSongInUrl, songIdFromUrl, spoken,
+} from './song-ui';
 
 export interface GuideHost {
   /** Called on any user gesture that starts playback, to unlock Web Audio. */
@@ -35,6 +37,7 @@ export interface GuideCopy {
 }
 
 type Mode = 'idle' | 'listen' | 'guide';
+const pretty = (note: string) => note.replace('#', '♯');
 
 export class GuidePlayer {
   song: Song | null = null;
@@ -42,19 +45,19 @@ export class GuidePlayer {
   tempo = 100;
   private idx = 0;
   private target: string | null = null;
+  private praised = false;
   private timers: number[] = [];
   private readonly strip = new NoteStrip($('strip'));
   private readonly el = {
     title: $('pTitle'), meta: $('pMeta'), desc: $('pDesc'),
     listen: $as<HTMLButtonElement>('btnListen'), guide: $as<HTMLButtonElement>('btnGuide'),
     stop: $as<HTMLButtonElement>('btnStop'), hint: $as<HTMLButtonElement>('btnHint'),
-    prog: $('progFill'), now: $('guideNow'), gnNote: $('gnNote'), gnLyric: $('gnLyric'), gnCount: $('gnCount'),
+    now: $('guideNow'), gnNote: $('gnNote'), gnLyric: $('gnLyric'), gnCount: $('gnCount'),
     feedback: $('feedback'), tempo: $as<HTMLInputElement>('tempo'), tempoVal: $('tempoVal'),
   };
 
   constructor(private readonly host: GuideHost, private readonly copy: GuideCopy) {}
 
-  /** The note the guide is waiting for, if any. */
   get targetNote(): string | null {
     return this.target;
   }
@@ -69,40 +72,38 @@ export class GuidePlayer {
     this.el.tempoVal.textContent = `${bpm} BPM`;
   }
 
-  load(song: Song): void {
+  load(song: Song, { scroll = true } = {}): void {
     this.stop();
     this.song = song;
     this.setTempo(song.tempo);
     this.el.title.textContent = song.title;
     this.el.meta.textContent = `${song.key} · ${playableCount(song)} notes`;
     this.el.desc.textContent = song.description;
-    for (const btn of [this.el.listen, this.el.guide, this.el.stop, this.el.hint]) btn.disabled = false;
+    for (const btn of [this.el.listen, this.el.guide, this.el.hint]) btn.disabled = false;
     this.strip.build(song);
-    this.showIdle('Ready when you are');
+    this.showIdle('Ready');
     this.host.onLoad?.(song);
-    this.feedback('info', 'Loaded. Press ', b('Listen'), ' to hear it, or ', b('Play Along'), ' to learn it.');
+    enterPractice(scroll);
+    this.feedback('info', b('Listen'), ' to hear it first, then ', b('Play along'), ' to learn it.');
+    announce(`${song.title} loaded. Listen to hear it, or Play along to learn it.`);
   }
 
   private showIdle(message: string): void {
     this.strip.reset();
-    this.setProgress(0);
+    setProgressBar(0);
     this.el.now.classList.add('idle');
     this.el.gnNote.textContent = '—';
     this.el.gnLyric.textContent = message;
-    this.el.gnCount.textContent = '—';
-  }
-
-  private setProgress(i: number): void {
-    this.el.prog.style.width = `${(100 * i) / (this.song?.notes.length ?? 1)}%`;
+    this.el.gnCount.textContent = `${this.song ? this.song.notes.length : 0} notes`;
   }
 
   private showNote(i: number, fallback: string): void {
     const n = this.song!.notes[i];
     this.strip.mark(i);
-    this.setProgress(i);
-    this.el.gnNote.textContent = n.note === REST ? '·' : n.note.replace('#', '♯');
+    setProgressBar(i / this.song!.notes.length);
+    this.el.gnNote.textContent = n.note === REST ? '·' : pretty(n.note);
     this.el.gnLyric.textContent = n.lyric || (n.note === REST ? '(rest)' : fallback);
-    this.el.gnCount.textContent = `note ${i + 1} / ${this.song!.notes.length}`;
+    this.el.gnCount.textContent = `note ${i + 1} of ${this.song!.notes.length}`;
   }
 
   private clearTimers(): void {
@@ -115,11 +116,15 @@ export class GuidePlayer {
     this.host.showTarget(note);
   }
 
-  private setListenButton(playing: boolean): void {
-    const icon = document.createElement('span');
-    icon.className = 'ic';
-    icon.textContent = playing ? '❚❚' : '▶';
-    this.el.listen.replaceChildren(icon, playing ? 'Stop' : 'Listen');
+  /** One Stop control: while listening, Listen shows "Listening…" and is pressed. */
+  private setMode(mode: Mode): void {
+    this.mode = mode;
+    const listening = mode === 'listen';
+    this.el.listen.setAttribute('aria-pressed', String(listening));
+    this.el.listen.querySelector('.label')!.textContent = listening ? 'Listening…' : 'Listen';
+    this.el.guide.setAttribute('aria-pressed', String(mode === 'guide'));
+    this.el.stop.disabled = mode === 'idle';
+    this.el.now.classList.toggle('idle', mode === 'idle');
   }
 
   stop(): void {
@@ -127,8 +132,7 @@ export class GuidePlayer {
     this.setTarget(null);
     this.host.silence?.();
     if (this.song && this.mode !== 'idle') this.showIdle('Stopped');
-    this.mode = 'idle';
-    this.setListenButton(false);
+    this.setMode('idle');
   }
 
   toggleListen(): void {
@@ -142,9 +146,7 @@ export class GuidePlayer {
     const song = this.song;
     this.clearTimers();
     this.setTarget(null);
-    this.mode = 'listen';
-    this.el.now.classList.remove('idle');
-    this.setListenButton(true);
+    this.setMode('listen');
     this.host.unlock();
     const beatMs = 60000 / this.tempo;
     let t = 260;
@@ -164,10 +166,9 @@ export class GuidePlayer {
     if (!this.song) return;
     this.clearTimers();
     this.host.silence?.();
-    this.mode = 'guide';
-    this.el.now.classList.remove('idle');
-    this.setListenButton(false);
+    this.setMode('guide');
     this.host.unlock();
+    this.praised = false;
     const [before, bold, after] = this.copy.instruction;
     this.feedback('info', before, b(bold), after);
     this.advanceTo(0);
@@ -186,6 +187,7 @@ export class GuidePlayer {
       return;
     }
     this.setTarget(n.note);
+    announce(`Play ${spoken(n.note)}`);
   }
 
   /** Instruments call this whenever the player sounds a note. */
@@ -193,12 +195,17 @@ export class GuidePlayer {
     if (this.mode !== 'guide' || !this.target) return;
     if (note === this.target) {
       this.strip.markDone(this.idx);
-      this.setProgress(this.idx + 1);
-      this.feedback('good', 'Nice — keep going!');
+      // praise once, then stay quiet so the line doesn't flicker on every note
+      if (!this.praised) {
+        this.feedback('good', 'Nice — keep going.');
+        this.praised = true;
+      }
       this.advanceTo(this.idx + 1);
     } else {
+      this.praised = false;
       this.host.showWrong?.(note);
-      this.feedback('bad', `That was ${note.replace('#', '♯')} — you want `, b(this.target.replace('#', '♯')), '.');
+      this.feedback('bad', `That was ${pretty(note)} — you want `, b(pretty(this.target)), '.');
+      announce(`That was ${spoken(note)}. You want ${spoken(this.target)}.`);
     }
   }
 
@@ -213,15 +220,16 @@ export class GuidePlayer {
     const song = this.song!;
     this.clearTimers();
     this.setTarget(null);
-    this.setProgress(song.notes.length);
+    setProgressBar(1);
     this.strip.mark(song.notes.length - 1);
+    this.setMode('idle');
+    this.el.now.classList.remove('idle');
     this.el.gnNote.textContent = '★';
     this.el.gnLyric.textContent = mode === 'guide' ? 'You played it!' : "That's the tune!";
     this.el.gnCount.textContent = 'complete';
     if (mode === 'guide') this.feedback('good', this.copy.done);
-    else this.feedback('good', 'Now try ', b('Play Along'), ' to play it yourself.');
-    this.mode = 'idle';
-    this.setListenButton(false);
+    else this.feedback('good', 'Now press ', b('Play along'), ' to play it yourself.');
+    announce(mode === 'guide' ? `You played ${song.title}!` : `Finished. Now press Play along to play it yourself.`);
     this.host.celebrate?.(song);
   }
 }
@@ -243,6 +251,7 @@ export function mountGuide(slug: InstrumentSlug, host: GuideHost, copy: GuideCop
     },
     (song) => unavailableReason(slug, song),
   );
+  initLibraryToggle();
 
   $('btnListen').addEventListener('click', () => player.toggleListen());
   $('btnGuide').addEventListener('click', () => player.guide());
@@ -252,18 +261,18 @@ export function mountGuide(slug: InstrumentSlug, host: GuideHost, copy: GuideCop
     player.setTempo(Number((e.target as HTMLInputElement).value)));
 
   window.addEventListener('keydown', (e) => {
-    const tag = (e.target as HTMLElement | null)?.tagName ?? '';
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.metaKey || e.ctrlKey || e.altKey) return;
-    if (e.code === 'Space') {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === 'Escape') return player.stop();
+    if (e.code === 'Space' && !isOperatingControl(e.target)) {
       e.preventDefault();
       player.toggleListen();
-    } else if (e.key === 'Escape') player.stop();
+    }
   });
 
   const linked = findSong(songIdFromUrl());
   if (linked && !unavailableReason(slug, linked)) {
     markActive(buttons, linked.id);
-    player.load(linked);
+    player.load(linked, { scroll: false });
   }
   return player;
 }

@@ -1,22 +1,18 @@
 ---
 import Base from '../layouts/Base.astro';
-import SongPanel from '../components/SongPanel.astro';
+import CoachBand from '../components/CoachBand.astro';
+import SongLibrary from '../components/SongLibrary.astro';
+import SettingsCard from '../components/SettingsCard.astro';
 import InstrumentFooter from '../components/InstrumentFooter.astro';
+import Icon from '../components/Icon.astro';
+import '../styles/instrument.css';
 import '../styles/steelpan.css';
-import { instrumentBySlug, instrumentJsonLd } from '../data/instruments';
+import { instrumentBySlug, instrumentJsonLd, breadcrumbJsonLd } from '../data/instruments';
 import { SITE, withBase } from '../lib/site';
 
 const inst = instrumentBySlug('steelpan');
 const url = new URL(Astro.url.pathname, Astro.site).href;
 const image = new URL(withBase('og/steelpan.png'), Astro.site).href;
-const breadcrumbs = {
-  '@context': 'https://schema.org',
-  '@type': 'BreadcrumbList',
-  itemListElement: [
-    { '@type': 'ListItem', position: 1, name: SITE.name, item: new URL(withBase(), Astro.site).href },
-    { '@type': 'ListItem', position: 2, name: inst.name, item: url },
-  ],
-};
 ---
 
 <Base
@@ -25,52 +21,60 @@ const breadcrumbs = {
   image="og/steelpan.png"
   imageAlt="A gleaming chrome steelpan with 25 note pads, one glowing amber, on a dark stage."
   keywords={inst.keywords}
-  jsonLd={[instrumentJsonLd(inst, url, image), breadcrumbs]}
+  jsonLd={[instrumentJsonLd(inst, url, image), breadcrumbJsonLd(inst, url, Astro.site!)]}
   themeColor="#0b1315"
   favicon="favicon-steelpan.svg"
 >
-  <div class="shell">
+  <main class="shell" id="main">
+    <a class="skip-link" href="#songs">Skip to songs</a>
     <header class="top">
       <div class="brand">
-        <div class="eyebrow">{inst.catalogNo} · Trinidad &amp; Tobago</div>
-        <h1 class="title">STEEL<span class="accent">PAN</span></h1>
-        <p class="tag">A playable <b>steel drum</b> synthesized live in your browser. Tap the chrome, or pick a song and <b>follow the lights</b>.</p>
+        <h1 class="title">Steel<span class="accent">pan</span></h1>
+        <p class="tag">The tenor pan of Trinidad &amp; Tobago, <b>synthesized live</b> in your browser. Strike the chrome — or pick a song and <b>follow the lights</b>.</p>
       </div>
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch between stage (dark) and daylight (light) themes">
-        <span id="themeIcon">◐</span><span id="themeLabel">Stage</span>
-      </button>
+      <div class="head-controls">
+        <div class="readout" hidden><span class="n" id="lastNote">—</span><span class="h">last struck</span></div>
+        <button class="theme-toggle" id="themeToggle" type="button">
+          <span id="iconSun"><Icon name="sun" /></span><span id="iconMoon" hidden><Icon name="moon" /></span>
+          <span id="themeLabel">Switch to daylight</span>
+        </button>
+      </div>
     </header>
 
-    <div class="grid">
-      <section class="stage" aria-label="Steel pan — click, tap or use the keyboard to play">
+    <div class="practice side">
+      <section class="stage" aria-label="Steelpan">
         <div class="pan-wrap">
           <div class="pan" id="pan"></div>
           <div class="pads" id="pads"></div>
         </div>
-        <div class="pan-foot">
-          <div class="now-note"><span class="n" id="freeNote">—</span><span class="h">last struck</span></div>
-          <div class="hint-note">Play with your mouse, or the keyboard like a piano <kbd>Z</kbd> <kbd>X</kbd> <kbd>C</kbd> … <kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd> …</div>
+        <div class="stage-foot">
+          <span class="kbd-hint">Play like a piano: <kbd>Z</kbd> <kbd>X</kbd> <kbd>C</kbd> … for the low octave, <kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd> … for the high one</span>
+          <span class="touch-hint">Tap a pad to strike it. Low notes sit on the rim, high notes toward the centre.</span>
         </div>
-        <noscript><p class="hint-note">The steelpan needs JavaScript to make sound.</p></noscript>
+        <noscript><p class="stage-foot">The steelpan needs JavaScript to make sound.</p></noscript>
       </section>
 
-      <SongPanel intro="Choose a tune from the library to load the play-along guide.">
-        <div class="row" slot="controls">
-          <label for="swNames">Show note names on pan</label>
-          <span class="switch"><input type="checkbox" id="swNames" checked /><span class="track"></span><span class="knob"></span></span>
-        </div>
-        <div class="row" slot="controls">
-          <label for="swKeys">Show keyboard keys</label>
-          <span class="switch"><input type="checkbox" id="swKeys" /><span class="track"></span><span class="knob"></span></span>
-        </div>
-        <Fragment slot="legend"><span><i class="a"></i>struck note</span><span><i class="t"></i>play this next</span></Fragment>
-      </SongPanel>
+      <div class="rail">
+        <CoachBand idle="Pick a song to practise, or just strike the pan." />
+        <SongLibrary />
+        <SettingsCard>
+          <div class="row">
+            <label for="swNames">Note names on pads</label>
+            <span class="switch"><input type="checkbox" id="swNames" checked /><span class="track"></span><span class="knob"></span></span>
+          </div>
+          <div class="row kbd-hint">
+            <label for="swKeys">Keyboard keys on pads</label>
+            <span class="switch"><input type="checkbox" id="swKeys" /><span class="track"></span><span class="knob"></span></span>
+          </div>
+          <Fragment slot="legend"><span><i class="a"></i>sounding</span><span><i class="t"></i>play this next</span></Fragment>
+        </SettingsCard>
+      </div>
     </div>
 
     <InstrumentFooter slug="steelpan">
       Every note is <b>synthesized live</b> with the Web Audio API — no samples. All songs are <b>public-domain / traditional</b>.
     </InstrumentFooter>
-  </div>
+  </main>
 </Base>
 
 <script>

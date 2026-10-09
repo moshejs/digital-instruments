@@ -41,7 +41,7 @@ const links = [
     border-bottom: 1px solid rgba(237, 234, 227, 0.1);
     backdrop-filter: blur(8px);
     font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
-    font-size: 12px;
+    font-size: 13px;
     letter-spacing: 0.06em;
   }
   .mdi-mark {
@@ -67,10 +67,13 @@ const links = [
     padding: 0;
   }
   ul a {
-    color: #a8a39a;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: #b4afa6;
     text-decoration: none;
     text-transform: uppercase;
-    padding: 4px 0;
+    padding: 0;
     border-bottom: 1px solid transparent;
     transition: color 0.15s, border-color 0.15s;
   }
@@ -84,8 +87,12 @@ const links = [
     outline-offset: 3px;
     border-radius: 2px;
   }
-  @media (max-width: 640px) {
-    .mdi-nav { flex-direction: column; align-items: flex-start; gap: 8px; }
-    .mdi-mark span { font-size: 15px; }
+  @media (max-width: 760px) {
+    .mdi-nav { flex-direction: column; align-items: stretch; gap: 0; padding-bottom: 0; }
+    .mdi-mark { min-height: 36px; }
+    /* one swipeable row of 44px targets instead of a ragged wrap */
+    ul { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; gap: 20px; margin: 0 -16px; padding: 0 16px; }
+    ul::-webkit-scrollbar { display: none; }
+    li { flex: none; }
   }
 </style>

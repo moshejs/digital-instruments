@@ -8,7 +8,7 @@
   --line-2: rgba(255, 214, 200, 0.22);
   --ink: #f8ede7;
   --ink-dim: #c9aca2;
-  --ink-faint: #8d6f66;
+  --ink-faint: #9c8178;
   --accent: #f3cf86;
   --accent-2: #ffe4ad;
   --accent-ink: #2b1d02;
@@ -29,7 +29,7 @@ h1.title {
   filter: drop-shadow(0 2px 0 rgba(80, 40, 10, 0.6));
 }
 
-.harp-wrap { width: min(100%, 720px); margin: 0 auto; }
+.harp-wrap { width: min(100%, 760px); margin: 0 auto; }
 #harp { display: block; width: 100%; height: auto; touch-action: none; user-select: none; cursor: crosshair; overflow: visible; }
 
 .str { stroke: #e9d8ab; stroke-linecap: round; fill: none; transition: stroke 0.15s; }
@@ -41,15 +41,16 @@ h1.title {
 
 .lever { cursor: pointer; }
 .lever circle { fill: #2a1a10; stroke: #c9a35a; stroke-width: 2; transition: fill 0.15s; }
-.lever rect { fill: #6b4a1c; transition: fill 0.15s, transform 0.18s; transform-box: fill-box; transform-origin: center bottom; }
+.lever .hit { fill: transparent; }
+.lever .handle { fill: #6b4a1c; transition: fill 0.15s, transform 0.18s; transform-box: fill-box; transform-origin: center bottom; }
 .lever.up circle { fill: var(--accent); }
-.lever.up rect { fill: var(--accent); transform: rotate(-35deg); }
+.lever.up .handle { fill: var(--accent); transform: rotate(-35deg); }
 .lever.needs circle { stroke: var(--guide); stroke-width: 3; animation: call-lever 0.9s ease-in-out infinite; }
 @keyframes call-lever { 50% { stroke-width: 5; } }
 .lever:focus { outline: none; }
 .lever:focus-visible circle { stroke: var(--guide); stroke-width: 4; }
 
-.slabel { font-family: var(--font-mono); font-size: 15px; fill: var(--ink-dim); pointer-events: none; }
+.slabel { font-family: var(--font-mono); font-size: 18px; fill: var(--ink-dim); pointer-events: none; }
 .slabel.target { fill: var(--guide); font-weight: 600; }
 .slabel.wrong { animation: miss 0.5s; }
 @keyframes miss { 30% { fill: var(--bad); } }

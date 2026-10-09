@@ -1,5 +1,6 @@
 ---
 import '../styles/fonts.css';
+import '../styles/base.css';
 import SiteNav from '../components/SiteNav.astro';
 import { SITE, withBase } from '../lib/site';
 
@@ -83,6 +84,7 @@ const imageUrl = new URL(withBase(image), Astro.site).href;
     <slot name="head" />
   </head>
   <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <SiteNav />
     <slot />
   </body>

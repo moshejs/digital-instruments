@@ -1,0 +1,23 @@
+---
+/** Practice settings: tempo (for note instruments) plus instrument-specific rows. */
+interface Props {
+  title?: string;
+  tempo?: boolean;
+}
+const { title = 'Settings', tempo = true } = Astro.props;
+---
+
+<section class="card settings" aria-label={title}>
+  <h2>{title}</h2>
+  <div class="ctrls">
+    {tempo && (
+      <div class="row">
+        <label for="tempo">Tempo</label>
+        <input type="range" id="tempo" min="40" max="180" value="100" />
+        <span class="tempo-val" id="tempoVal">100 BPM</span>
+      </div>
+    )}
+    <slot />
+    {Astro.slots.has('legend') && <div class="legend"><slot name="legend" /></div>}
+  </div>
+</section>

@@ -10,7 +10,7 @@ import { createAudioContext, makeImpulse, makeNoise } from '../lib/audio';
 import { buildTines, kalimbaNumber, KALIMBA_KEYMAP } from '../lib/kalimba-layout';
 import { invertKeymap } from '../lib/keyboard';
 import type { Song } from '../data/songs';
-import { $, capture } from './shared/song-ui';
+import { $, capture, showLast } from './shared/song-ui';
 import { mountGuide, type GuidePlayer } from './shared/guide-player';
 
 /* ───────────────────────────── sound ───────────────────────────── */
@@ -138,7 +138,11 @@ function renderTines(): void {
     const key = document.createElement('span');
     key.className = 'key';
     key.textContent = (NOTE_TO_KEY[t.note] ?? '').toUpperCase();
-    tine.append(num, letter, key);
+    // the button is the whole column (a tall thumb target); the steel tine is drawn inside it
+    const bar = document.createElement('span');
+    bar.className = 'bar';
+    bar.append(num, letter, key);
+    tine.append(bar);
 
     tine.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -189,7 +193,7 @@ function ringTine(note: string): void {
 function sound(note: string, velocity: number): void {
   synth.pluck(noteToFreq(note), velocity);
   ringTine(note);
-  $('lastNote').textContent = note;
+  showLast(note);
 }
 
 /** The player plucks a tine. */

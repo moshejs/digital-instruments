@@ -12,7 +12,7 @@ import {
   soundboardY, stringGeometry, stringLabel, type Levers,
 } from '../lib/harp';
 import type { Song } from '../data/songs';
-import { $, capture } from './shared/song-ui';
+import { $, capture, showLast } from './shared/song-ui';
 import { mountGuide, type GuidePlayer } from './shared/guide-player';
 
 /* ───────────────────────────── sound ───────────────────────────── */
@@ -140,7 +140,9 @@ const views: StringView[] = [];
 
 function renderHarp(): SVGSVGElement {
   const svg = $('harp') as unknown as SVGSVGElement;
-  svg.setAttribute('viewBox', `0 0 ${HARP_VIEW.width} ${HARP_VIEW.height}`);
+  // crop to the frame itself so the harp renders as large as its column allows
+  svg.setAttribute('viewBox', '70 44 906 682');
+  void HARP_VIEW;
 
   const defs = svgEl('defs');
   defs.innerHTML = `
@@ -171,7 +173,12 @@ function renderHarp(): SVGSVGElement {
     const width = 3.2 - (i / (HARP_STRINGS.length - 1)) * 1.6; // bass strings are thicker
     const path = svgEl('path', { d: `M${x},${top} L${x},${bottom}`, class: `str ${s.colour}`, 'stroke-width': width.toFixed(2) });
     const lever = svgEl('g', { class: 'lever', role: 'button', tabindex: 0, 'aria-label': `Lever for the ${s.name} string` });
-    lever.append(svgEl('circle', { cx: x + 10, cy: top + 4, r: 7 }), svgEl('rect', { x: x + 6, y: top - 10, width: 8, height: 10, rx: 3 }));
+    // an invisible hit area covering this lever's share of the row, so it is easy to tap
+    lever.append(
+      svgEl('rect', { class: 'hit', x: x - 14, y: top - 26, width: 48, height: 48, rx: 10 }),
+      svgEl('circle', { cx: x + 10, cy: top + 4, r: 7 }),
+      svgEl('rect', { class: 'handle', x: x + 6, y: top - 10, width: 8, height: 10, rx: 3 }),
+    );
     lever.addEventListener('pointerdown', (e) => {
       e.stopPropagation();
       e.preventDefault();
@@ -232,7 +239,7 @@ function sound(i: number, velocity: number): string {
   v.path.classList.add('sounding');
   ringing.add(i);
   const note = midiToName(midi);
-  $('lastNote').textContent = stringLabel(i, levers[i]) + note.slice(-1);
+  showLast(stringLabel(i, levers[i]) + note.slice(-1));
   return note;
 }
 

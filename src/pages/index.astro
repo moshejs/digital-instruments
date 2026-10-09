@@ -52,9 +52,8 @@ const jsonLd = [
   keywords={['online instruments', 'browser instruments', 'virtual steel drum', 'online theremin', 'online kalimba', 'glass harp', 'online harp', 'Web Audio API', 'learn music', 'play along', 'public domain songs']}
   jsonLd={jsonLd}
 >
-  <main class="home">
+  <main class="home" id="main">
     <header class="hero">
-      <p class="eyebrow">Workshop catalogue · {new Date().getFullYear()} · five instruments</p>
       <h1>
         <span class="owner">Moshe's</span>
         <span class="word">Digital Instruments</span>
@@ -142,15 +141,15 @@ const jsonLd = [
             {SONGS.map((s) => (
               <tr>
                 <th scope="row">{s.title}</th>
-                <td class="muted">{s.origin}</td>
-                <td>{s.key}</td>
-                <td><span class={`level ${s.difficulty.toLowerCase()}`}>{s.difficulty}</span></td>
+                <td class="muted" data-label="Origin">{s.origin}</td>
+                <td data-label="Key">{s.key}</td>
+                <td data-label="Level"><span class={`level ${s.difficulty.toLowerCase()}`}>{s.difficulty}</span></td>
                 <td class="play">
                   {INSTRUMENTS.map((inst) => {
                     const reason = unavailableReason(inst.slug, s);
                     return reason
-                      ? <span class="go na" title={`${inst.name}: ${reason}`}>{inst.short}</span>
-                      : <a class="go" style={`--go:${inst.accent}`} href={`${withBase(`${inst.slug}/`)}?song=${s.id}`}>{inst.short}</a>;
+                      ? <span class="go na" title={`${inst.name}: ${reason}`}>{inst.short}<span class="sr-only"> — not available: {reason}</span></span>
+                      : <a class="go" style={`--go:${inst.accent}`} href={`${withBase(`${inst.slug}/`)}?song=${s.id}`} aria-label={`Play ${s.title} on the ${inst.name.toLowerCase()}`}>{inst.short}</a>;
                   })}
                 </td>
               </tr>
@@ -204,7 +203,7 @@ const jsonLd = [
   .home {
     --ink: #edeae3;
     --ink-2: #a8a39a;
-    --ink-3: #6e6a63;
+    --ink-3: #86827b;
     --rule: rgba(237, 234, 227, 0.12);
     --plate: #1a1917;
     --amber: #f6b23c;
@@ -221,7 +220,6 @@ const jsonLd = [
 
   /* ── hero ── */
   .hero { padding: clamp(40px, 8vw, 96px) 0 clamp(28px, 5vw, 56px); }
-  .eyebrow { margin: 0 0 18px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ink-2); }
   h1 { margin: 0; font-family: var(--display); text-transform: uppercase; line-height: 0.86; text-wrap: balance; }
   h1 .owner { display: block; font-weight: 700; font-size: clamp(22px, 3.4vw, 40px); letter-spacing: 0.18em; color: var(--ink-2); }
   h1 .word { display: block; font-weight: 800; font-size: clamp(54px, 12.5vw, 168px); letter-spacing: 0.01em; }
@@ -259,7 +257,7 @@ const jsonLd = [
   .plate-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
   .plate-head h2 { margin: 0; font-family: var(--display); font-weight: 800; font-size: clamp(30px, 3.4vw, 44px); text-transform: uppercase; line-height: 0.9; }
   .plate-head h2 em { display: block; font-style: normal; font-weight: 700; font-size: 0.48em; letter-spacing: 0.06em; color: var(--plate-accent); margin-top: 4px; }
-  .no { order: 2; font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; color: var(--ink-3); white-space: nowrap; }
+  .no { order: 2; font-family: var(--mono); font-size: 13px; letter-spacing: 0.08em; color: var(--ink-3); white-space: nowrap; }
   .tagline { margin: 0; font-size: 15px; line-height: 1.55; color: var(--ink); }
   .cta { margin-top: auto; font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--plate-accent); }
 
@@ -319,8 +317,8 @@ const jsonLd = [
 
   .specs { margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); border-top: 1px solid var(--rule); }
   .specs div { padding: 9px 0; border-bottom: 1px solid var(--rule); }
-  .specs dt { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); }
-  .specs dd { margin: 3px 0 0; font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
+  .specs dt { font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
+  .specs dd { margin: 3px 0 0; font-family: var(--mono); font-size: 13px; color: var(--ink); }
 
   /* ── songbook ── */
   .songbook, .workshop { padding-top: clamp(56px, 8vw, 96px); }
@@ -331,18 +329,34 @@ const jsonLd = [
   .table-wrap { overflow-x: auto; border-top: 1px solid var(--rule); }
   table { width: 100%; border-collapse: collapse; min-width: 900px; font-size: 14.5px; }
   th, td { text-align: left; padding: 12px 12px 12px 0; border-bottom: 1px solid var(--rule); vertical-align: middle; }
-  thead th { font-family: var(--mono); font-weight: 400; font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); }
+  thead th { font-family: var(--mono); font-weight: 400; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
   tbody th { font-weight: 600; }
   .muted { color: var(--ink-2); }
-  .level { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid; }
+  .level { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid; }
   .level.easy { color: #57d98a; }
   .level.medium { color: var(--amber); }
   .level.hard { color: var(--magenta); }
   .play { white-space: nowrap; padding-right: 0; }
-  .go { display: inline-block; font-family: var(--mono); font-size: 11.5px; text-decoration: none; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--rule); color: var(--ink); margin: 2px 4px 2px 0; transition: border-color 0.15s, color 0.15s; }
+  .go { display: inline-flex; align-items: center; min-height: 44px; font-family: var(--mono); font-size: 13px; text-decoration: none; padding: 0 10px; border-radius: 4px; border: 1px solid var(--rule); color: var(--ink); margin: 2px 4px 2px 0; transition: border-color 0.15s, color 0.15s; }
   a.go:hover { border-color: var(--go); color: var(--go); }
   a.go:focus-visible { outline: 2px solid var(--go); outline-offset: 2px; }
   .go.na { color: var(--ink-3); border-style: dashed; text-decoration: line-through; cursor: help; }
+
+  /* Phones: each song becomes a card; the play links wrap instead of scrolling sideways */
+  @media (max-width: 760px) {
+    .table-wrap { overflow: visible; }
+    table, tbody, tr, th, td { display: block; }
+    table { min-width: 0; }
+    thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    tr { padding: 16px 0; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; }
+    th, td { border: 0; padding: 0; }
+    tbody th { font-size: 17px; grid-column: 1; }
+    td[data-label="Level"] { grid-column: 2; grid-row: 1; align-self: center; }
+    td.muted, td[data-label="Key"] { grid-column: 1 / -1; font-size: 14px; }
+    td[data-label="Key"]::before { content: "Key: "; color: var(--ink-3); }
+    .play { grid-column: 1 / -1; white-space: normal; display: flex; flex-wrap: wrap; gap: 8px; padding-top: 8px; }
+    .go { margin: 0; }
+  }
 
   /* ── workshop notes ── */
   .notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(18px, 3vw, 40px); margin-top: 26px; border-top: 1px solid var(--rule); padding-top: 22px; }
@@ -354,9 +368,9 @@ const jsonLd = [
   .site-foot {
     max-width: 1280px; margin: clamp(64px, 9vw, 110px) auto 0; padding: 22px clamp(16px, 3vw, 34px) 34px;
     border-top: 1px solid rgba(237, 234, 227, 0.12); display: flex; flex-wrap: wrap; gap: 10px 26px; justify-content: space-between;
-    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #6e6a63;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; color: #86827b;
   }
-  .site-foot a { color: #a8a39a; }
+  .site-foot a { color: #b4afa6; display: inline-flex; align-items: center; min-height: 44px; }
   .site-foot a:hover { color: #edeae3; }
 
   @media (prefers-reduced-motion: reduce) {

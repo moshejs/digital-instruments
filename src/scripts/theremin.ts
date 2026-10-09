@@ -7,7 +7,10 @@ import { REST, centsBetween, freqInfo, midiToFreq, noteToFreq, snapFreq, type Sc
 import { createAudioContext, makeImpulse } from '../lib/audio';
 import { FIELD_MAX_MIDI, FIELD_MIN_MIDI, freqToX, tiltToControl, xToFreq, yToVolume } from '../lib/theremin-field';
 import { SONGS, findSong, playableCount, type Song } from '../data/songs';
-import { $, $as, NoteStrip, b, markActive, renderSongList, setFeedback, setSongInUrl, songIdFromUrl, capture } from './shared/song-ui';
+import {
+  $, $as, NoteStrip, announce, b, capture, enterPractice, initLibraryToggle, isOperatingControl, markActive,
+  renderSongList, setFeedback, setProgressBar, setSongInUrl, songIdFromUrl,
+} from './shared/song-ui';
 
 /* ───────────────────────────── sound ───────────────────────────── */
 
@@ -259,7 +262,7 @@ function resetHand(): void {
   if (user.playing) return;
   field.classList.remove('playing');
   hzTop.textContent = '— Hz';
-  noteTop.textContent = 'silent';
+  noteTop.textContent = powered ? 'move into the field' : 'power on to play';
   pitchAntenna.style.setProperty('--pglow', '0%');
   volumeAntenna.style.setProperty('--vglow', '0%');
 }
@@ -315,6 +318,52 @@ function initField(): void {
     });
   }
   window.addEventListener('resize', sizeScope);
+  initFieldKeyboard();
+}
+
+/* Keyboard: the field is a slider. ←/→ step a semitone, ↑/↓ change volume,
+   Home/End jump to the ends of the range. Leaving the field falls silent. */
+const kb = { fx: freqToX(midiToFreq(69)), vol: 0.6 };
+const SEMITONE = 1 / (FIELD_MAX_MIDI - FIELD_MIN_MIDI);
+
+function describeField(fx: number, vol: number): void {
+  const info = freqInfo(xToFreq(fx));
+  field.setAttribute('aria-valuenow', String(info.midi));
+  field.setAttribute('aria-valuetext', `${info.name.replace('#', ' sharp ')}, volume ${Math.round(vol * 100)} percent`);
+}
+
+function initFieldKeyboard(): void {
+  field.tabIndex = 0;
+  field.setAttribute('role', 'slider');
+  field.setAttribute('aria-label', 'Theremin. Left and right arrows change pitch, up and down change volume.');
+  field.setAttribute('aria-valuemin', String(FIELD_MIN_MIDI));
+  field.setAttribute('aria-valuemax', String(FIELD_MAX_MIDI));
+  describeField(kb.fx, kb.vol);
+  field.addEventListener('keydown', (e) => {
+    const step: Record<string, () => void> = {
+      ArrowLeft: () => { kb.fx -= SEMITONE; },
+      ArrowRight: () => { kb.fx += SEMITONE; },
+      ArrowUp: () => { kb.vol += 0.1; },
+      ArrowDown: () => { kb.vol -= 0.1; },
+      Home: () => { kb.fx = 0; },
+      End: () => { kb.fx = 1; },
+    };
+    const act = step[e.key];
+    if (!act) return;
+    e.preventDefault();
+    if (!powered) powerOn();
+    act();
+    kb.fx = Math.min(1, Math.max(0, kb.fx));
+    kb.vol = Math.min(1, Math.max(0, kb.vol));
+    // snap to the nearest semitone so arrow keys land on real notes
+    const midi = Math.round(FIELD_MIN_MIDI + kb.fx * (FIELD_MAX_MIDI - FIELD_MIN_MIDI));
+    kb.fx = freqToX(midiToFreq(midi));
+    play(kb.fx, kb.vol);
+    describeField(kb.fx, kb.vol);
+  });
+  field.addEventListener('blur', () => {
+    if (powered && !motion.active) release();
+  });
 }
 
 function powerOn(): void {
@@ -322,10 +371,14 @@ function powerOn(): void {
   synth.init();
   synth.resume();
   powered = true;
+  const wasFocused = document.activeElement === $('power');
   $('power').hidden = true;
   field.classList.add('powered');
+  if (wasFocused) field.focus();
   applyVoiceControls();
+  noteTop.textContent = 'move into the field';
   player.feedback('info', 'Powered on. Glide across the field to play — or pick a song.');
+  announce('Theremin on. In the field, left and right arrows change pitch; up and down change volume.');
 }
 
 /* ───────────── motion: gyroscope → pitch & volume, accelerometer → vibrato ───────────── */
@@ -447,7 +500,7 @@ class Player {
     title: $('pTitle'), meta: $('pMeta'), desc: $('pDesc'),
     listen: $as<HTMLButtonElement>('btnListen'), guide: $as<HTMLButtonElement>('btnGuide'),
     stop: $as<HTMLButtonElement>('btnStop'), hint: $as<HTMLButtonElement>('btnHint'),
-    prog: $('progFill'), now: $('guideNow'), gnNote: $('gnNote'), gnLyric: $('gnLyric'), gnCount: $('gnCount'),
+    now: $('guideNow'), gnNote: $('gnNote'), gnLyric: $('gnLyric'), gnCount: $('gnCount'),
     feedback: $('feedback'), target: $('target'), targetLab: $('targetLab'),
   };
 
@@ -455,17 +508,19 @@ class Player {
     setFeedback(this.el.feedback, kind, ...parts);
   }
 
-  load(song: Song): void {
+  load(song: Song, { scroll = true } = {}): void {
     this.stop();
     this.song = song;
     this.tempo = song.tempo;
     this.el.title.textContent = song.title;
     this.el.meta.textContent = `${song.key} · ${playableCount(song)} notes`;
     this.el.desc.textContent = song.description;
-    for (const btn of [this.el.listen, this.el.guide, this.el.stop, this.el.hint]) btn.disabled = false;
+    for (const btn of [this.el.listen, this.el.guide, this.el.hint]) btn.disabled = false;
     this.strip.build(song);
-    this.showIdle('Ready when you are');
-    this.feedback('info', 'Loaded. Press ', b('Listen'), ' to hear the glide, or ', b('Play Along'), ' to follow the target.');
+    this.showIdle('Ready');
+    enterPractice(scroll);
+    this.feedback('info', b('Listen'), ' to hear the glide, then ', b('Play along'), ' and follow the band.');
+    announce(`${song.title} loaded. Listen to hear it, or Play along to follow the target band.`);
   }
 
   private showIdle(message: string): void {
@@ -474,12 +529,12 @@ class Player {
     this.el.now.classList.add('idle');
     this.el.gnNote.textContent = '—';
     this.el.gnLyric.textContent = message;
-    this.el.gnCount.textContent = '—';
+    this.el.gnCount.textContent = `${this.song ? this.song.notes.length : 0} notes`;
     this.hideTarget();
   }
 
   private setProgress(i: number): void {
-    this.el.prog.style.width = `${(100 * i) / (this.song?.notes.length ?? 1)}%`;
+    setProgressBar(i / (this.song?.notes.length ?? 1));
   }
 
   private showNote(i: number, fallback: string): void {
@@ -488,7 +543,7 @@ class Player {
     this.setProgress(i);
     this.el.gnNote.textContent = n.note === REST ? '·' : n.note;
     this.el.gnLyric.textContent = n.lyric || (n.note === REST ? '(rest)' : fallback);
-    this.el.gnCount.textContent = `note ${i + 1} / ${this.song!.notes.length}`;
+    this.el.gnCount.textContent = `note ${i + 1} of ${this.song!.notes.length}`;
   }
 
   private hideTarget(): void {
@@ -522,7 +577,7 @@ class Player {
     if (this.song && this.mode !== 'idle') this.showIdle('Stopped');
     this.mode = 'idle';
     resetHand();
-    setListenButton(false);
+    setModeUI('idle');
   }
 
   listen(): void {
@@ -531,7 +586,7 @@ class Player {
     this.clearTimers();
     this.mode = 'listen';
     this.el.now.classList.remove('idle');
-    setListenButton(true);
+    setModeUI('listen');
     const beatMs = 60000 / this.tempo;
     let t = 200;
     notes.forEach((n, i) => {
@@ -567,7 +622,7 @@ class Player {
     this.clearTimers();
     this.mode = 'guide';
     this.el.now.classList.remove('idle');
-    setListenButton(false);
+    setModeUI('guide');
     this.feedback('info', 'Follow the glowing band — slide onto it and keep the volume up.');
     const beatMs = 60000 / this.tempo;
     let acc = 200;
@@ -610,6 +665,7 @@ class Player {
     this.finish(`On pitch ${accuracy}% of the time`);
     const verdict = accuracy >= 75 ? 'Beautiful control!' : accuracy >= 45 ? 'Nice — the glide is tricky, keep at it.' : 'Keep chasing the band — it gets easier.';
     this.feedback(accuracy >= 45 ? 'good' : 'info', 'Play-along complete — ', b(`${accuracy}%`), ` on pitch. ${verdict}`);
+    announce(`Play-along complete. ${accuracy} percent on pitch.`);
   }
 
   private finish(message: string): void {
@@ -623,7 +679,7 @@ class Player {
     this.el.gnCount.textContent = 'complete';
     this.mode = 'idle';
     resetHand();
-    setListenButton(false);
+    setModeUI('idle');
   }
 
   hint(): void {
@@ -640,19 +696,18 @@ const player = new Player();
 
 /* ───────────────────────────── controls ───────────────────────────── */
 
-let listenPlaying = false;
-
-function setListenButton(playing: boolean): void {
-  listenPlaying = playing;
-  const icon = document.createElement('span');
-  icon.className = 'ic';
-  icon.textContent = playing ? '❚❚' : '▶';
-  $('btnListen').replaceChildren(icon, playing ? 'Stop' : 'Listen');
+/** One Stop control: while listening, Listen shows "Listening…" and is pressed. */
+function setModeUI(mode: 'idle' | 'listen' | 'guide'): void {
+  const listen = $('btnListen');
+  listen.setAttribute('aria-pressed', String(mode === 'listen'));
+  listen.querySelector('.label')!.textContent = mode === 'listen' ? 'Listening…' : 'Listen';
+  $('btnGuide').setAttribute('aria-pressed', String(mode === 'guide'));
+  $as<HTMLButtonElement>('btnStop').disabled = mode === 'idle';
 }
 
 function toggleListen(): void {
   if (!player.song) return;
-  if (listenPlaying || player.mode === 'listen') player.stop();
+  if (player.mode === 'listen') player.stop();
   else player.listen();
 }
 
@@ -684,14 +739,7 @@ function init(): void {
   requestAnimationFrame(drawScope);
   initField();
 
-  const power = $('power');
-  power.addEventListener('click', powerOn);
-  power.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      powerOn();
-    }
-  });
+  $('power').addEventListener('click', powerOn);
 
   const buttons = renderSongList($('songList'), SONGS, (song) => {
     markActive(buttons, song.id);
@@ -699,6 +747,7 @@ function init(): void {
     powerOn();
     player.load(song);
   });
+  initLibraryToggle();
 
   $('btnListen').addEventListener('click', toggleListen);
   $('btnGuide').addEventListener('click', () => player.guide());
@@ -729,19 +778,19 @@ function init(): void {
   });
 
   window.addEventListener('keydown', (e) => {
-    const tag = (e.target as HTMLElement | null)?.tagName ?? '';
-    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
-    if (e.code === 'Space') {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === 'Escape') return player.stop();
+    if (e.code === 'Space' && !isOperatingControl(e.target)) {
       e.preventDefault();
       if (!powered) powerOn();
       else toggleListen();
-    } else if (e.key === 'Escape') player.stop();
+    }
   });
 
   const linked = findSong(songIdFromUrl());
   if (linked) {
     markActive(buttons, linked.id);
-    player.load(linked);
+    player.load(linked, { scroll: false });
   }
 }
 

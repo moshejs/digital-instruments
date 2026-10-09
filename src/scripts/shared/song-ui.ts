@@ -126,3 +126,86 @@ export function capture(el: Element, pointerId: number): void {
     /* the gesture still works without capture */
   }
 }
+
+/* ───────────── practice mode ───────────── */
+
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** Collapses the song list to the chosen song (or expands it again). */
+export function setLibraryCollapsed(collapsed: boolean): void {
+  const library = document.getElementById('songs');
+  const toggle = document.getElementById('libToggle');
+  if (!library || !toggle) return;
+  library.classList.toggle('collapsed', collapsed);
+  toggle.hidden = false;
+  toggle.setAttribute('aria-expanded', String(!collapsed));
+  const label = toggle.querySelector('.label');
+  if (label) label.textContent = collapsed ? 'Change song' : 'Hide list';
+}
+
+/** Wires the "Change song" disclosure once. */
+export function initLibraryToggle(): void {
+  const toggle = document.getElementById('libToggle');
+  toggle?.addEventListener('click', () => {
+    const collapsed = document.getElementById('songs')?.classList.contains('collapsed') ?? false;
+    setLibraryCollapsed(!collapsed);
+  });
+}
+
+/**
+ * Switches the page into practice mode for a loaded song: the coach shows the
+ * transport and note, the list collapses, and the coach is brought into view
+ * next to the instrument.
+ */
+export function enterPractice(scroll = true): void {
+  const coach = document.getElementById('coach');
+  if (!coach) return;
+  coach.dataset.state = 'practice';
+  setLibraryCollapsed(true);
+  if (!scroll) return;
+  // let the layout settle (the coach just changed size), then reveal it
+  window.setTimeout(() => {
+    const rect = coach.getBoundingClientRect();
+    if (rect.top < 0 || rect.bottom > window.innerHeight) {
+      coach.scrollIntoView({ block: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' });
+    }
+  }, 40);
+}
+
+/** Writes to the polite screen-reader status region (only for things worth announcing). */
+export function announce(text: string): void {
+  const status = document.getElementById('srStatus');
+  if (!status) return;
+  status.textContent = '';
+  window.setTimeout(() => { status.textContent = text; }, 30);
+}
+
+/** Note names the way a screen reader should say them: "F♯4" → "F sharp 4". */
+export const spoken = (note: string): string => note.replace('#', ' sharp ').replace('♯', ' sharp ');
+
+/** Shows the "last note" readout in the header (hidden until something is played). */
+export function showLast(text: string): void {
+  const value = document.getElementById('lastNote');
+  if (!value) return;
+  value.textContent = text;
+  value.closest<HTMLElement>('.readout')?.removeAttribute('hidden');
+}
+
+/**
+ * Global shortcuts (Space, Esc, note keys) must not fire while the user is
+ * operating a control — Space on a focused button should press that button.
+ */
+export function isOperatingControl(target: EventTarget | null): boolean {
+  const el = target as HTMLElement | null;
+  if (!el || !el.closest) return false;
+  return Boolean(el.closest('button, a[href], input, select, textarea, summary, [role="slider"], [role="button"], [contenteditable="true"]'));
+}
+
+/** Sets the progress bar fill (0…1) without animating layout. */
+export function setProgressBar(fraction: number): void {
+  const fill = document.getElementById('progFill');
+  const bar = document.getElementById('progress');
+  const f = Math.max(0, Math.min(1, fraction));
+  if (fill) fill.style.transform = `scaleX(${f})`;
+  bar?.setAttribute('aria-valuenow', String(Math.round(f * 100)));
+}

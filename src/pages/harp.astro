@@ -1,6 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
-import SongPanel from '../components/SongPanel.astro';
+import CoachBand from '../components/CoachBand.astro';
+import SongLibrary from '../components/SongLibrary.astro';
+import SettingsCard from '../components/SettingsCard.astro';
 import InstrumentFooter from '../components/InstrumentFooter.astro';
 import '../styles/instrument.css';
 import '../styles/harp.css';
@@ -22,39 +24,46 @@ const image = new URL(withBase('og/harp.png'), Astro.site).href;
   themeColor="#140b0e"
   favicon="favicon-harp.svg"
 >
-  <div class="shell">
+  <main class="shell" id="main">
+    <a class="skip-link" href="#songs">Skip to songs</a>
     <header class="top">
       <div class="brand">
-        <div class="eyebrow">{inst.catalogNo} · Celtic lever harp</div>
         <h1 class="title">Lever Harp</h1>
-        <p class="tag"><b>Pluck a string</b>, or <b>drag across</b> them for a glissando. The little levers at the top raise a string a semitone — red strings are C, blue are F.</p>
+        <p class="tag">A Celtic lever harp. <b>Pluck a string</b>, or <b>drag across</b> them for a glissando. The levers at the top raise a string a semitone — red strings are C, blue are F.</p>
       </div>
-      <div class="readout" aria-live="off"><span class="n" id="lastNote">—</span><span class="h">last string</span></div>
+      <div class="head-controls">
+        <div class="readout" hidden><span class="n" id="lastNote">—</span><span class="h">last string</span></div>
+      </div>
     </header>
 
-    <div class="grid">
-      <section class="stage" aria-label="Lever harp — pluck or drag across the strings, or use the number keys">
-        <div class="harp-wrap"><svg id="harp" role="img" aria-label="A 15-string lever harp"></svg></div>
+    <div class="practice side">
+      <section class="stage" aria-label="Lever harp">
+        <div class="harp-wrap"><svg id="harp" role="group" aria-label="Harp strings and levers. Pluck with the number keys; Shift plus a key flips that string's lever."></svg></div>
         <div class="stage-foot">
-          <span>Keys <kbd>1</kbd>–<kbd>7</kbd> · <kbd>Q</kbd>–<kbd>U</kbd> · <kbd>I</kbd> pluck · <kbd>Shift</kbd>+key flips a lever</span>
+          <span class="kbd-hint">Keys <kbd>1</kbd>–<kbd>7</kbd>, <kbd>Q</kbd>–<kbd>U</kbd>, <kbd>I</kbd> pluck · <kbd>Shift</kbd> + key flips a lever</span>
+          <span class="touch-hint">Tap a string to pluck it, or drag across them. Tap a lever to flip it.</span>
           <button class="btn" id="btnReset" type="button">Reset levers to C major</button>
         </div>
         <noscript><p class="stage-foot">The harp needs JavaScript to make sound.</p></noscript>
       </section>
 
-      <SongPanel intro="Pick a tune — the levers set themselves for its key, and flip mid-song when a melody needs it.">
-        <div class="row" slot="controls">
-          <label for="swAuto">Auto levers</label>
-          <span class="switch"><input type="checkbox" id="swAuto" checked /><span class="track"></span><span class="knob"></span></span>
-        </div>
-        <Fragment slot="legend"><span><i class="a"></i>sounding string · raised lever</span><span><i class="t"></i>play this next</span></Fragment>
-      </SongPanel>
+      <div class="rail">
+        <CoachBand idle="Pick a song to practise — the levers set themselves for its key — or just play." />
+        <SongLibrary />
+        <SettingsCard>
+          <div class="row">
+            <label for="swAuto">Set levers automatically</label>
+            <span class="switch"><input type="checkbox" id="swAuto" checked /><span class="track"></span><span class="knob"></span></span>
+          </div>
+          <Fragment slot="legend"><span><i class="a"></i>sounding · raised lever</span><span><i class="t"></i>play this next</span></Fragment>
+        </SettingsCard>
+      </div>
     </div>
 
     <InstrumentFooter slug="harp">
       Every string is <b>physically modelled</b> with Karplus–Strong synthesis. All songs are <b>public-domain / traditional</b>.
     </InstrumentFooter>
-  </div>
+  </main>
 </Base>
 
 <script>

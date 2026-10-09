@@ -1,0 +1,35 @@
+---
+/** One consistent icon family: 24px grid, 1.8px round strokes, currentColor. */
+type Name = 'play' | 'guide' | 'stop' | 'hint' | 'power' | 'sun' | 'moon' | 'list' | 'tilt';
+interface Props {
+  name: Name;
+  size?: number;
+}
+const { name, size = 16 } = Astro.props;
+const paths: Record<Name, string> = {
+  play: '<path d="M7 5.5v13l11-6.5z" fill="currentColor" stroke="none"/>',
+  guide: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/>',
+  stop: '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5" fill="currentColor" stroke="none"/>',
+  hint: '<path d="M9 17.5V6l10-2v11.5"/><circle cx="6.8" cy="17.5" r="2.4"/><circle cx="16.8" cy="15.5" r="2.4"/>',
+  power: '<path d="M12 3.5v8"/><path d="M7.2 6.6a7.5 7.5 0 1 0 9.6 0"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/>',
+  moon: '<path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/>',
+  list: '<path d="M4 7h16M4 12h16M4 17h10"/>',
+  tilt: '<rect x="7" y="3" width="10" height="18" rx="2.5" transform="rotate(-18 12 12)"/><path d="M11 17.5h2" transform="rotate(-18 12 12)"/>',
+};
+---
+
+<svg
+  class="icon"
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.8"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  set:html={paths[name]}
+/>

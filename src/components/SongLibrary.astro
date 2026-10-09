@@ -1,0 +1,14 @@
+---
+/** The song picker. Collapses to the chosen song once practice starts. */
+import Icon from './Icon.astro';
+---
+
+<section class="card library" id="songs" aria-labelledby="songsTitle" tabindex="-1">
+  <div class="lib-head">
+    <h2 id="songsTitle">Songs</h2>
+    <button class="lib-toggle" id="libToggle" type="button" aria-expanded="true" aria-controls="songList" hidden>
+      <Icon name="list" /><span class="label">Change song</span>
+    </button>
+  </div>
+  <div class="songs" id="songList"></div>
+</section>

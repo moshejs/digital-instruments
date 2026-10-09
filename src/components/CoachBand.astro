@@ -1,0 +1,57 @@
+---
+/**
+ * The practice coach: what you're learning, the transport, the note to play
+ * next, the strip and feedback. It lives beside (or under) the instrument so
+ * your eyes never leave it, and pins to the bottom of the screen on phones.
+ * Driven by guide-player.ts / theremin.ts through these ids.
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  /** What to do before a song is picked. */
+  idle: string;
+}
+const { idle } = Astro.props;
+---
+
+<section class="coach" id="coach" data-state="browse" aria-label="Practice">
+  <div class="coach-idle">
+    <p>{idle}</p>
+    <a class="btn" href="#songs"><Icon name="list" /><span>Choose a song</span></a>
+  </div>
+
+  <div class="coach-live">
+    <div class="coach-head">
+      <h2 class="ptitle" id="pTitle">Pick a song</h2>
+      <span class="pmeta" id="pMeta"></span>
+    </div>
+    <p class="pdesc" id="pDesc"></p>
+
+    <div class="coach-main">
+      <div class="guide-now idle" id="guideNow">
+        <div class="big" id="gnNote">—</div>
+        <div class="meta">
+          <div class="lyr" id="gnLyric">Ready</div>
+          <div class="cnt" id="gnCount">—</div>
+        </div>
+      </div>
+      <div class="transport">
+        <button class="btn primary" id="btnListen" type="button" disabled><Icon name="play" /><span class="label">Listen</span></button>
+        <button class="btn guide" id="btnGuide" type="button" disabled><Icon name="guide" /><span class="label">Play along</span></button>
+        <button class="btn" id="btnStop" type="button" disabled><Icon name="stop" /><span class="label">Stop</span></button>
+        <button class="btn" id="btnHint" type="button" disabled><Icon name="hint" /><span class="label">Hint</span></button>
+      </div>
+    </div>
+
+    <div class="progress" id="progress" role="progressbar" aria-label="Song progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="progFill"></i></div>
+
+    <div class="strip-wrap" aria-hidden="true">
+      <div class="playhead"></div>
+      <div class="strip" id="strip"></div>
+    </div>
+
+    <p class="feedback info" id="feedback"></p>
+  </div>
+
+  <p class="sr-only" id="srStatus" aria-live="polite"></p>
+</section>

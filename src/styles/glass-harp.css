@@ -8,7 +8,7 @@
   --line-2: rgba(190, 210, 255, 0.24);
   --ink: #eef2ff;
   --ink-dim: #a3b0cc;
-  --ink-faint: #67738f;
+  --ink-faint: #7b86a0;
   --accent: #b8a6ff;
   --accent-2: #d9cfff;
   --accent-ink: #160f36;
@@ -31,7 +31,7 @@ h1.title {
 
 /* ---------- the table ---------- */
 .table {
-  position: relative; width: 100%; aspect-ratio: 2.05; border-radius: 14px; overflow: hidden;
+  position: relative; width: 100%; aspect-ratio: 2.4; border-radius: 14px; overflow: hidden;
   touch-action: none; user-select: none;
   background:
     radial-gradient(60% 70% at 50% 0%, rgba(184, 166, 255, 0.16), transparent 70%),
@@ -53,7 +53,7 @@ h1.title {
   -webkit-tap-highlight-color: transparent; touch-action: none;
 }
 .glass.front { width: 5.4%; bottom: 9%; z-index: 2; }
-.glass.back { width: 4.4%; bottom: 43%; z-index: 1; filter: brightness(0.85); }
+.glass.back { width: 4.4%; bottom: 47%; z-index: 1; filter: brightness(0.85); }
 .glass:focus-visible { outline: 2px solid var(--guide); outline-offset: 4px; border-radius: 6px; }
 
 .glass .bowl {
@@ -83,7 +83,7 @@ h1.title {
 .glass .foot { position: absolute; bottom: 0; left: 12%; right: 12%; height: 7%; border-radius: 50%; border: 1px solid rgba(220, 230, 255, 0.4); background: rgba(255, 255, 255, 0.07); }
 .glass .lbl {
   position: absolute; left: 50%; top: 100%; transform: translate(-50%, 6px); white-space: nowrap;
-  font-family: var(--font-mono); font-size: clamp(8px, 1.15vw, 11px); color: var(--ink-dim); opacity: 0; transition: opacity 0.2s;
+  font-family: var(--font-mono); font-size: clamp(11px, 1.1vw, 13px); color: var(--ink-dim); opacity: 0; transition: opacity 0.2s;
 }
 body.show-names .glass .lbl { opacity: 1; }
 .glass.back .lbl { top: auto; bottom: 100%; transform: translate(-50%, -6px); color: var(--ink-faint); }
@@ -100,4 +100,12 @@ body.show-names .glass .lbl { opacity: 1; }
 .glass.wrong { animation: wobble 0.35s; }
 @keyframes wobble { 25% { transform: translateX(calc(-50% - 3px)); } 75% { transform: translateX(calc(-50% + 3px)); } }
 
-.rub-hint { position: absolute; left: 50%; top: 6%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(217, 207, 255, 0.55); pointer-events: none; white-space: nowrap; }
+.rub-hint { position: absolute; left: 50%; top: 6%; transform: translateX(-50%); font-size: 13px; letter-spacing: 0.06em; color: var(--ink-dim); pointer-events: none; white-space: nowrap; }
+
+/* Phones: 25 glasses need room. The table keeps a playable width and scrolls
+   sideways when you swipe its empty upper half; the glasses themselves stay rub-only. */
+.table-scroll { border-radius: 14px; }
+@media (max-width: 760px) {
+  .table-scroll { overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
+  .table { min-width: 760px; touch-action: pan-x; }
+}
