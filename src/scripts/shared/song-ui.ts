@@ -68,11 +68,12 @@ export class NoteStrip {
 
   constructor(private readonly host: HTMLElement) {}
 
-  build(song: Song): void {
+  /** format renders a note in the instrument's own notation (e.g. kalimba tabs). */
+  build(song: Song, format: (note: string) => string = (n) => n): void {
     this.host.replaceChildren();
     this.beats = song.notes.map((n) => {
       const beat = el('div', n.note === REST ? 'beat rest' : 'beat');
-      beat.append(el('div', 'bn', n.note === REST ? '·' : n.note), el('div', 'bl', n.lyric || ' '));
+      beat.append(el('div', 'bn', n.note === REST ? '·' : format(n.note)), el('div', 'bl', n.lyric || ' '));
       this.host.append(beat);
       return beat;
     });
@@ -196,11 +197,23 @@ export function revealInstrument(): void {
 }
 
 /** Writes to the polite screen-reader status region (only for things worth announcing). */
+let pendingAnnouncement: string | null = null;
+let announceTimer = 0;
+
+/**
+ * Announcements made in the same moment are combined rather than replacing each
+ * other (e.g. "Flipped the G4 lever: now G sharp. Play G sharp 4").
+ */
 export function announce(text: string): void {
   const status = document.getElementById('srStatus');
   if (!status) return;
+  pendingAnnouncement = pendingAnnouncement ? `${pendingAnnouncement}. ${text}` : text;
+  window.clearTimeout(announceTimer);
   status.textContent = '';
-  window.setTimeout(() => { status.textContent = text; }, 30);
+  announceTimer = window.setTimeout(() => {
+    status.textContent = pendingAnnouncement ?? '';
+    pendingAnnouncement = null;
+  }, 30);
 }
 
 /** Note names the way a screen reader should say them: "F♯4" → "F sharp 4". */

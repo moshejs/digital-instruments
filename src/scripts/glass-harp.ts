@@ -151,6 +151,9 @@ interface Rub {
   level: number;
   sungMs: number;
   counted: boolean;
+  /** time spent circling the target too slowly to sing, for the coaching hint */
+  slowMs: number;
+  hinted: boolean;
 }
 const rubs = new Map<number, Rub>(); // pointerId → rub
 
@@ -210,7 +213,7 @@ function startRub(id: number, note: string, x: number, y: number): void {
   engine.unlock();
   endRub(id);
   engine.ting(noteToFreq(note), 0.5); // the first touch taps the glass
-  const rub: Rub = { note, voice: new GlassVoice(noteToFreq(note)), x, y, t: performance.now(), moved: 0, level: 0, sungMs: 0, counted: false };
+  const rub: Rub = { note, voice: new GlassVoice(noteToFreq(note)), x, y, t: performance.now(), moved: 0, level: 0, sungMs: 0, counted: false, slowMs: 0, hinted: false };
   rubs.set(id, rub);
   setSinging(note, +1, 0);
   showLast(note.replace('#', '♯'));
@@ -236,8 +239,17 @@ function moveRub(id: number, x: number, y: number): void {
       rub.counted = true; // one sustained ring counts as one note in the guide
       player.checkHit(rub.note);
     }
+  } else if (isGuidingOn(rub.note)) {
+    // circling the right glass, but too slowly to make it sing: say so instead of failing silently
+    rub.slowMs += dt;
+    if (!rub.hinted && rub.slowMs > 700) {
+      rub.hinted = true;
+      player.feedback('info', 'Circle a little faster — the glass needs speed to sing.');
+    }
   }
 }
+
+const isGuidingOn = (note: string) => player.mode === 'guide' && player.targetNote === note;
 
 function endRub(id: number): void {
   const rub = rubs.get(id);
@@ -245,6 +257,9 @@ function endRub(id: number): void {
   rubs.delete(id);
   rub.voice.release();
   setSinging(rub.note, -1, 0);
+  if (!rub.counted && !rub.hinted && rub.sungMs === 0 && isGuidingOn(rub.note)) {
+    player.feedback('info', 'Tapping gives a ting — circle the rim to make the glass sing.');
+  }
 }
 
 /**

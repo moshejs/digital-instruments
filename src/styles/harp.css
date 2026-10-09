@@ -54,3 +54,6 @@ h1.title {
 .slabel.target { fill: var(--guide); font-weight: 600; }
 .slabel.wrong { animation: miss 0.5s; }
 @keyframes miss { 30% { fill: var(--bad); } }
+
+.lever-note { flex-basis: 100%; color: var(--ink-dim); font-size: 13px; }
+@media (max-width: 760px) { .slabel { font-size: 34px; } }

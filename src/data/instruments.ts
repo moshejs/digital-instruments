@@ -45,7 +45,7 @@ export const INSTRUMENTS: Instrument[] = [
     catalogNo: 'No. 02',
     name: 'Theremin',
     displayName: 'Aetherwave',
-    tagline: 'The instrument you play without touching — hover, or tilt your phone through the air.',
+    tagline: 'The instrument you play without touching. Hover, or tilt your phone through the air.',
     description:
       'Play a theremin in your browser: glide your cursor for pitch and volume, or tilt and shake your phone. Live oscilloscope, portamento, vibrato, timbre and reverb controls, and nine songs with a follow-the-target guide.',
     keywords: ['theremin', 'online theremin', 'virtual theremin', 'Web Audio', 'gyroscope instrument', 'oscilloscope', 'electronic music', 'Léon Theremin'],
@@ -65,7 +65,7 @@ export const INSTRUMENTS: Instrument[] = [
     catalogNo: 'No. 03',
     name: 'Kalimba',
     displayName: 'Kalimba',
-    tagline: 'A thumb piano of tuned steel tines on a warm wooden board — tap the tines, or play with two thumbs.',
+    tagline: 'A thumb piano of tuned steel tines on a warm wooden board. Tap the tines, or play with two thumbs.',
     description:
       'Play a 17-key kalimba (thumb piano) in your browser. Tap steel tines laid out like the real instrument, read kalimba number tabs, and learn songs with a follow-the-tines guide — synthesized live with Web Audio.',
     keywords: ['kalimba', 'thumb piano', 'mbira', 'online kalimba', 'virtual kalimba', 'kalimba tabs', 'Web Audio', 'learn songs'],

@@ -27,6 +27,8 @@ export interface GuideHost {
   silence?(): void;
   /** A little flourish when a song ends. */
   celebrate?(song: Song): void;
+  /** Show notes in the instrument's own notation (kalimba tabs); defaults to note names. */
+  formatNote?(note: string): string;
 }
 
 export interface GuideCopy {
@@ -62,6 +64,21 @@ export class GuidePlayer {
     return this.target;
   }
 
+  /** A note as this instrument writes it. */
+  private fmt(note: string): string {
+    return this.host.formatNote ? this.host.formatNote(note) : pretty(note);
+  }
+
+  /** Re-render the coach after the instrument's notation setting changes. */
+  refreshNotation(): void {
+    if (!this.song) return;
+    this.strip.build(this.song, (n) => this.fmt(n));
+    if (this.mode === 'idle') return;
+    this.strip.mark(this.idx);
+    const n = this.song.notes[this.idx];
+    if (n && n.note !== REST) this.el.gnNote.textContent = this.fmt(n.note);
+  }
+
   feedback(kind: 'good' | 'bad' | 'info', ...parts: (string | Node)[]): void {
     setFeedback(this.el.feedback, kind, ...parts);
   }
@@ -80,7 +97,7 @@ export class GuidePlayer {
     this.el.meta.textContent = `${song.key} · ${playableCount(song)} notes`;
     this.el.desc.textContent = song.description;
     for (const btn of [this.el.listen, this.el.guide, this.el.hint]) btn.disabled = false;
-    this.strip.build(song);
+    this.strip.build(song, (n) => this.fmt(n));
     this.showIdle('Ready');
     this.host.onLoad?.(song);
     enterPractice(scroll);
@@ -101,7 +118,7 @@ export class GuidePlayer {
     const n = this.song!.notes[i];
     this.strip.mark(i);
     setProgressBar(i / this.song!.notes.length);
-    this.el.gnNote.textContent = n.note === REST ? '·' : pretty(n.note);
+    this.el.gnNote.textContent = n.note === REST ? '·' : this.fmt(n.note);
     this.el.gnLyric.textContent = n.lyric || (n.note === REST ? '(rest)' : fallback);
     this.el.gnCount.textContent = `note ${i + 1} of ${this.song!.notes.length}`;
   }
@@ -205,7 +222,7 @@ export class GuidePlayer {
     } else {
       this.praised = false;
       this.host.showWrong?.(note);
-      this.feedback('bad', `That was ${pretty(note)} — you want `, b(pretty(this.target)), '.');
+      this.feedback('bad', `That was ${this.fmt(note)} — you want `, b(this.fmt(this.target)), '.');
       announce(`That was ${spoken(note)}. You want ${spoken(this.target)}.`);
     }
   }

@@ -12,7 +12,7 @@ import {
   soundboardY, stringGeometry, stringLabel, type Levers,
 } from '../lib/harp';
 import type { Song } from '../data/songs';
-import { $, capture, showLast } from './shared/song-ui';
+import { $, announce, capture, showLast } from './shared/song-ui';
 import { mountGuide, type GuidePlayer } from './shared/guide-player';
 
 /* ───────────────────────────── sound ───────────────────────────── */
@@ -175,7 +175,7 @@ function renderHarp(): SVGSVGElement {
     const lever = svgEl('g', { class: 'lever', role: 'button', tabindex: 0, 'aria-label': `Lever for the ${s.name} string` });
     // an invisible hit area covering this lever's share of the row, so it is easy to tap
     lever.append(
-      svgEl('rect', { class: 'hit', x: x - 14, y: top - 26, width: 48, height: 48, rx: 10 }),
+      svgEl('rect', { class: 'hit', x: x - 14, y: top - 84, width: 48, height: 106, rx: 10 }),
       svgEl('circle', { cx: x + 10, cy: top + 4, r: 7 }),
       svgEl('rect', { class: 'handle', x: x + 6, y: top - 10, width: 8, height: 10, rx: 3 }),
     );
@@ -204,7 +204,29 @@ function setLever(i: number, up: boolean): void {
   const v = views[i];
   v.lever.classList.toggle('up', up);
   v.lever.setAttribute('aria-pressed', String(up));
+  // name the result, not just the switch: "Lever for the G4 string, now G♯"
+  v.lever.setAttribute('aria-label', `Lever for the ${HARP_STRINGS[i].name} string, now ${stringLabel(i, up)}`);
   v.label.textContent = stringLabel(i, up);
+}
+
+/** The visible note under the harp: what the levers are doing for this song. */
+function setLeverNote(text: string): void {
+  const el = document.getElementById('leverNote');
+  if (el) el.textContent = text;
+}
+
+/** Flip a lever on the app's behalf and say so (shown, and spoken during Play along). */
+function autoFlip(i: number, up: boolean, speak: boolean): void {
+  setLever(i, up);
+  const text = `Flipped the ${HARP_STRINGS[i].name} lever: now ${stringLabel(i, up)}`;
+  setLeverNote(text + '.');
+  if (speak) announce(text.replace('♯', ' sharp').replace('♭', ' flat'));
+}
+
+/** "E, A, B and F♯ raised" — the pitch classes this setting raises. */
+function describeLevers(): string {
+  const raised = [...new Set(levers.map((up, i) => (up ? stringLabel(i, true) : null)).filter((n): n is string => !!n))];
+  return raised.length ? `${raised.join(', ')} raised` : 'all levers down (E♭ tuning)';
 }
 
 function setAllLevers(next: Levers): void {
@@ -333,12 +355,14 @@ function init(): void {
     {
       unlock: () => synth.unlock(),
       onLoad: (song: Song) => {
-        if (autoLevers) setAllLevers(leverPreset(song.notes.filter((n) => n.note !== REST).map((n) => n.note)));
+        if (!autoLevers) return;
+        setAllLevers(leverPreset(song.notes.filter((n) => n.note !== REST).map((n) => n.note)));
+        setLeverNote(`Levers set for ${song.key}: ${describeLevers()}.`);
       },
       perform: (note, { velocity }) => {
         const f = chooseFingering(note, levers);
         if (!f) return;
-        if (levers[f.index] !== f.lever) setLever(f.index, f.lever); // the app flips levers as it plays
+        if (levers[f.index] !== f.lever) autoFlip(f.index, f.lever, false); // the app flips levers as it plays
         sound(f.index, velocity);
       },
       showTarget: (note) => {
@@ -347,8 +371,11 @@ function init(): void {
         const f = chooseFingering(note, levers);
         if (!f) return;
         if (levers[f.index] !== f.lever) {
-          if (autoLevers) setLever(f.index, f.lever);
-          else views[f.index].lever.classList.add('needs');
+          if (autoLevers) autoFlip(f.index, f.lever, true);
+          else {
+            views[f.index].lever.classList.add('needs');
+            setLeverNote(`Flip the ${HARP_STRINGS[f.index].name} lever to play ${note.replace('#', '♯')}.`);
+          }
         }
         views[f.index].path.classList.add('target');
         views[f.index].label.classList.add('target');
@@ -374,7 +401,10 @@ function init(): void {
     autoLevers = auto.checked;
     if (autoLevers && player.song) setAllLevers(leverPreset(player.song.notes.filter((n) => n.note !== REST).map((n) => n.note)));
   });
-  $('btnReset').addEventListener('click', () => setAllLevers(C_MAJOR_LEVERS));
+  $('btnReset').addEventListener('click', () => {
+    setAllLevers(C_MAJOR_LEVERS);
+    setLeverNote(`Levers reset to C major: ${describeLevers()}.`);
+  });
 }
 
 init();

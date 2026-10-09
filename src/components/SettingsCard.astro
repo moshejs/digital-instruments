@@ -19,5 +19,6 @@ const { title = 'Settings', tempo = true } = Astro.props;
     )}
     <slot />
     {Astro.slots.has('legend') && <div class="legend"><slot name="legend" /></div>}
+    <p class="shortcuts kbd-hint"><kbd>Space</kbd> listen or stop · <kbd>Esc</kbd> stop</p>
   </div>
 </section>

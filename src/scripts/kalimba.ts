@@ -114,7 +114,14 @@ const synth = new KalimbaSynth();
 const NOTE_TO_KEY = invertKeymap(KALIMBA_KEYMAP);
 const tineEls = new Map<string, HTMLButtonElement>();
 const ringTimers = new Map<string, number>();
-let player: GuidePlayer;
+let player: GuidePlayer | undefined;
+
+/** Kalimba tablature: scale degree with a combining dot above per higher octave (5, 5̇, 5̈). */
+function tab(note: string): string {
+  if (document.body.dataset.notation === 'letters') return note;
+  const { digit, dots } = kalimbaNumber(note);
+  return `${digit}${['', '\u0307', '\u0308'][dots] ?? ''}`;
+}
 
 function renderTines(): void {
   const host = $('tines');
@@ -200,7 +207,7 @@ function sound(note: string, velocity: number): void {
 function play(note: string, velocity = 1): void {
   synth.unlock();
   sound(note, velocity);
-  player.checkHit(note);
+  player?.checkHit(note);
 }
 
 /* ───────────────────────────── controls ───────────────────────────── */
@@ -211,6 +218,7 @@ function initNotation(): void {
     document.body.dataset.notation = mode;
     buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.notation === mode)));
     try { localStorage.setItem('mdi-kalimba-notation', mode); } catch { /* ignore */ }
+    player?.refreshNotation();
   };
   buttons.forEach((b) => b.addEventListener('click', () => apply(b.dataset.notation!)));
   let saved = 'numbers';
@@ -257,6 +265,7 @@ function init(): void {
         void tine.offsetWidth;
         tine.classList.add('wrong');
       },
+      formatNote: (note) => tab(note),
       celebrate: (song: Song) => {
         // a little arpeggio sweep up the tines
         song.notes.filter((n) => n.note !== REST).slice(-6)

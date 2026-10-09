@@ -162,3 +162,11 @@ select:focus-visible{ outline:2px solid var(--guide); outline-offset:2px; }
 button.power { border: 0; padding: 0; margin: 0; width: 100%; font: inherit; color: inherit; }
 .field-foot b { color: var(--cyan-2); font-weight: 600; }
 .tilt-toggle .icon { width: 18px; height: 18px; }
+
+/* Phones: a gutter on the right you can always scroll the page from (the field captures touch) */
+@media (max-width:760px){
+  .field-wrap{ width:calc(100% - 28px); }
+  .stage{ position:relative; }
+  .stage::after{ content:""; position:absolute; right:9px; top:calc(50% - 30px); width:4px; height:60px; border-radius:2px;
+    background:repeating-linear-gradient(180deg, var(--line-2) 0 3px, transparent 3px 7px); pointer-events:none; }
+}

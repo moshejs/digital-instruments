@@ -109,3 +109,4 @@ body.show-names .glass .lbl { opacity: 1; }
   .table-scroll { overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
   .table { min-width: 760px; touch-action: pan-x; }
 }
+@media (max-width: 760px) { .rub-hint { display: none; } }

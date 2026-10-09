@@ -29,7 +29,7 @@ const image = new URL(withBase('og/harp.png'), Astro.site).href;
     <header class="top">
       <div class="brand">
         <h1 class="title">Lever Harp</h1>
-        <p class="tag">A Celtic lever harp. <b>Pluck a string</b>, or <b>drag across</b> them for a glissando. The levers at the top raise a string a semitone — red strings are C, blue are F.</p>
+        <p class="tag">A Celtic lever harp. <b>Pluck a string</b>, or <b>drag across</b> them for a glissando. It's tuned in E♭, and each lever at the top raises its string a semitone. Red strings are C, blue are F.</p>
       </div>
       <div class="head-controls">
         <div class="readout" hidden><span class="n" id="lastNote">—</span><span class="h">last string</span></div>
@@ -41,8 +41,9 @@ const image = new URL(withBase('og/harp.png'), Astro.site).href;
         <div class="harp-wrap"><svg id="harp" role="group" aria-label="Harp strings and levers. Pluck with the number keys; Shift plus a key flips that string's lever."></svg></div>
         <div class="stage-foot">
           <span class="kbd-hint">Keys <kbd>1</kbd>–<kbd>7</kbd>, <kbd>Q</kbd>–<kbd>U</kbd>, <kbd>I</kbd> pluck · <kbd>Shift</kbd> + key flips a lever</span>
-          <span class="touch-hint">Tap a string to pluck it, or drag across them. Tap a lever to flip it.</span>
-          <button class="btn" id="btnReset" type="button">Reset levers to C major</button>
+          <span class="touch-hint">Tap or drag across the strings; tap a lever to flip it. Turn your phone sideways for a bigger harp.</span>
+          <button class="btn" id="btnReset" type="button">Reset levers (C major)</button>
+          <span class="lever-note" id="leverNote" aria-hidden="true">Levers: E, A and B raised (C major).</span>
         </div>
         <noscript><p class="stage-foot">The harp needs JavaScript to make sound.</p></noscript>
       </section>
