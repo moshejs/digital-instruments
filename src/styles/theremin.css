@@ -57,7 +57,7 @@ h1.title span{ color:var(--cyan-2); }
 /* ---------- the play field ---------- */
 /* ---------- the play field ---------- */
 .field-wrap{
-  position:relative; width:100%; height:clamp(340px, 64vh, 700px);
+  position:relative; width:100%; height:clamp(340px, 52vh, 620px);
   border-radius:14px; overflow:hidden; cursor:none;
   background:
     radial-gradient(120% 120% at 50% 120%, #0a1620, transparent 60%),

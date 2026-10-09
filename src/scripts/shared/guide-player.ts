@@ -8,7 +8,7 @@ import { REST } from '../../lib/music';
 import { SONGS, findSong, playableCount, type Song } from '../../data/songs';
 import { unavailableReason, type InstrumentSlug } from '../../data/availability';
 import {
-  $, $as, NoteStrip, announce, b, enterPractice, initLibraryToggle, isOperatingControl, markActive,
+  $, $as, NoteStrip, announce, b, enterPractice, revealInstrument, initLibraryToggle, isOperatingControl, markActive,
   renderSongList, setFeedback, setProgressBar, setSongInUrl, songIdFromUrl, spoken,
 } from './song-ui';
 
@@ -171,6 +171,7 @@ export class GuidePlayer {
     this.praised = false;
     const [before, bold, after] = this.copy.instruction;
     this.feedback('info', before, b(bold), after);
+    revealInstrument();
     this.advanceTo(0);
   }
 

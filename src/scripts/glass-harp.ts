@@ -300,6 +300,19 @@ function initKeyboard(): void {
   window.addEventListener('blur', () => [...keyVoices.keys()].forEach(keyRelease));
 }
 
+/**
+ * Phones: the table is wider than the screen and scrolls sideways. Keep the
+ * glass that matters (the next target, or the one sounding) centred in view.
+ */
+function followGlass(note: string): void {
+  const scroller = document.querySelector<HTMLElement>('.table-scroll');
+  const glass = glassEls.get(note);
+  if (!scroller || !glass || scroller.scrollWidth <= scroller.clientWidth + 1) return;
+  const left = glass.offsetLeft + glass.offsetWidth / 2 - scroller.clientWidth / 2;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  scroller.scrollTo({ left: Math.max(0, left), behavior: reduce ? 'instant' : 'smooth' });
+}
+
 /* the app's own performance (Listen / Hint) */
 const autoVoices = new Set<GlassVoice>();
 
@@ -309,6 +322,7 @@ function perform(note: string, durationMs: number, velocity: number): void {
   autoVoices.add(voice);
   voice.setLevel(0.75 * velocity, 0.06);
   setSinging(note, +1, 0.75);
+  followGlass(note);
   showLast(note.replace('#', '♯'));
   window.setTimeout(() => {
     voice.release();
@@ -330,7 +344,10 @@ function init(): void {
       perform: (note, { durationMs, velocity }) => perform(note, durationMs, velocity),
       showTarget: (note) => {
         glassEls.forEach((g) => g.classList.remove('target'));
-        if (note) glassEls.get(note)?.classList.add('target');
+        if (note) {
+          glassEls.get(note)?.classList.add('target');
+          followGlass(note);
+        }
       },
       showWrong: (note) => {
         const g = glassEls.get(note);

@@ -8,7 +8,7 @@ import { createAudioContext, makeImpulse } from '../lib/audio';
 import { FIELD_MAX_MIDI, FIELD_MIN_MIDI, freqToX, tiltToControl, xToFreq, yToVolume } from '../lib/theremin-field';
 import { SONGS, findSong, playableCount, type Song } from '../data/songs';
 import {
-  $, $as, NoteStrip, announce, b, capture, enterPractice, initLibraryToggle, isOperatingControl, markActive,
+  $, $as, NoteStrip, announce, b, capture, enterPractice, revealInstrument, initLibraryToggle, isOperatingControl, markActive,
   renderSongList, setFeedback, setProgressBar, setSongInUrl, songIdFromUrl,
 } from './shared/song-ui';
 
@@ -624,6 +624,7 @@ class Player {
     this.el.now.classList.remove('idle');
     setModeUI('guide');
     this.feedback('info', 'Follow the glowing band — slide onto it and keep the volume up.');
+    revealInstrument();
     const beatMs = 60000 / this.tempo;
     let acc = 200;
     this.plan = this.song.notes.map((n, index) => {

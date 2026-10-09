@@ -162,12 +162,35 @@ export function enterPractice(scroll = true): void {
   if (!coach) return;
   coach.dataset.state = 'practice';
   setLibraryCollapsed(true);
-  if (!scroll) return;
-  // let the layout settle (the coach just changed size), then reveal it
+  if (scroll) revealInstrument();
+}
+
+/**
+ * Brings the instrument into view — the thing you play and the target that
+ * lights up on it — with the coach's controls fully visible too.
+ * Desktop: the instrument's top near the top of the screen; if instrument and
+ * coach together are taller than the screen, keep the coach whole and trim the
+ * instrument's top edge instead. Phones: the coach is pinned to the bottom, so
+ * only the instrument needs placing.
+ */
+export function revealInstrument(): void {
+  // wait a beat: the coach and song list have just changed size
   window.setTimeout(() => {
-    const rect = coach.getBoundingClientRect();
-    if (rect.top < 0 || rect.bottom > window.innerHeight) {
-      coach.scrollIntoView({ block: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' });
+    const stage = document.querySelector<HTMLElement>('.stage');
+    const coach = document.getElementById('coach');
+    if (!stage || !coach) return;
+    const margin = 12;
+    const vh = window.innerHeight;
+    const stageTop = stage.getBoundingClientRect().top + window.scrollY;
+    let target = stageTop - margin;
+    const coachPinned = window.matchMedia('(max-width: 980px)').matches;
+    if (!coachPinned) {
+      const coachBottom = coach.getBoundingClientRect().bottom + window.scrollY;
+      if (coachBottom - target > vh - margin) target = coachBottom - vh + margin;
+    }
+    target = Math.max(0, target);
+    if (Math.abs(target - window.scrollY) > 24) {
+      window.scrollTo({ top: target, behavior: reducedMotion() ? 'instant' : 'smooth' });
     }
   }, 40);
 }
