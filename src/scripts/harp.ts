@@ -182,13 +182,13 @@ function renderHarp(): SVGSVGElement {
     lever.addEventListener('pointerdown', (e) => {
       e.stopPropagation();
       e.preventDefault();
-      setLever(i, !levers[i]);
+      flipByHand(i);
     });
     lever.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         e.stopPropagation();
-        setLever(i, !levers[i]);
+        flipByHand(i);
       }
     });
     const label = svgEl('text', { x, y: bottom + 30, class: 'slabel', 'text-anchor': 'middle' });
@@ -213,6 +213,12 @@ function setLever(i: number, up: boolean): void {
 function setLeverNote(text: string): void {
   const el = document.getElementById('leverNote');
   if (el) el.textContent = text;
+}
+
+/** The player flipped a lever by hand: keep the note under the harp true. */
+function flipByHand(i: number): void {
+  setLever(i, !levers[i]);
+  setLeverNote(`You flipped the ${HARP_STRINGS[i].name} lever. Levers: ${describeLevers()}.`);
 }
 
 /** Flip a lever on the app's behalf and say so (shown, and spoken during Play along). */
@@ -328,7 +334,7 @@ function initKeyboard(): void {
     const i = HARP_KEYS.indexOf(key);
     if (i < 0 || held.has(key)) return;
     held.add(key);
-    if (e.shiftKey) setLever(i, !levers[i]); // Shift + key flips that string's lever
+    if (e.shiftKey) flipByHand(i); // Shift + key flips that string's lever
     else pluck(i);
   });
   window.addEventListener('keyup', (e) => {

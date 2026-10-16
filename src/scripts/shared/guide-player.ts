@@ -11,6 +11,7 @@ import {
   $, $as, NoteStrip, announce, b, enterPractice, revealInstrument, initLibraryToggle, isOperatingControl, markActive,
   renderSongList, setFeedback, setProgressBar, setSongInUrl, songIdFromUrl, spoken,
 } from './song-ui';
+import { track } from '../../lib/analytics';
 
 export interface GuideHost {
   /** Called on any user gesture that starts playback, to unlock Web Audio. */
@@ -53,6 +54,8 @@ export class GuidePlayer {
   /** Play-along tally for the end-of-song summary. */
   private slips = 0;
   private hints = 0;
+  /** Supplied by mountGuide: the instrument, for analytics events. */
+  instrument = '';
   /** Supplied by mountGuide: the song after this one, if any. */
   nextSong: (song: Song) => Song | null = () => null;
   private timers: number[] = [];
@@ -194,6 +197,7 @@ export class GuidePlayer {
 
   guide(): void {
     if (!this.song) return;
+    track(`play-along/${this.instrument}/${this.song.id}`);
     this.clearTimers();
     this.host.silence?.();
     this.setMode('guide');
@@ -265,6 +269,7 @@ export class GuidePlayer {
     if (mode === 'guide') {
       this.feedback('good', this.copy.done);
       this.showSummary(song);
+      track(`finished/${this.instrument}/${song.id}`);
     } else {
       this.feedback('good', 'Now press ', b('Play along'), ' to play it yourself.');
       announce('Finished. Now press Play along to play it yourself.');
@@ -295,8 +300,9 @@ export class GuidePlayer {
  */
 export function mountGuide(slug: InstrumentSlug, host: GuideHost, copy: GuideCopy): GuidePlayer {
   const player = new GuidePlayer(host, copy);
+  player.instrument = slug;
   const pick = (song: Song) => {
-    if (setSongInUrl(song.id)) return; // opening that song's own page
+    if (setSongInUrl(song.id, song.title)) return; // opening that song's own page
     markActive(buttons, song.id);
     host.unlock();
     player.load(song);
@@ -335,7 +341,7 @@ export function mountGuide(slug: InstrumentSlug, host: GuideHost, copy: GuideCop
   const linked = findSong(songIdFromUrl());
   if (linked && !unavailableReason(slug, linked)) {
     markActive(buttons, linked.id);
-    setSongInUrl(linked.id);
+    setSongInUrl(linked.id, linked.title);
     player.load(linked, { scroll: false });
   }
   return player;

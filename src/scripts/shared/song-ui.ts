@@ -113,7 +113,7 @@ export function songIdFromUrl(): string | null {
  * song page, picking a different song opens that song's page instead (its
  * written lesson would otherwise describe the wrong song); returns true then.
  */
-export function setSongInUrl(id: string): boolean {
+export function setSongInUrl(id: string, title?: string): boolean {
   const main = document.getElementById('main');
   const root = main?.dataset.instrumentPath;
   if (!root) return false;
@@ -122,9 +122,19 @@ export function setSongInUrl(id: string): boolean {
     window.location.assign(path);
     return true;
   }
-  if (window.location.pathname !== path) window.history.replaceState(null, '', path);
+  if (window.location.pathname !== path) {
+    // keep any campaign tag (?ref=…) so analytics still credits the source
+    const params = new URLSearchParams(window.location.search);
+    params.delete('song');
+    const query = params.toString();
+    window.history.replaceState(null, '', `${path}${query ? `?${query}` : ''}${window.location.hash}`);
+  }
+  // on the instrument's own page, the tab names the song you're practising
+  if (title && !main.dataset.song) document.title = `${title} · ${instrumentTitle}`;
   return false;
 }
+
+const instrumentTitle = document.title;
 
 export function setFeedback(node: HTMLElement, kind: 'good' | 'bad' | 'info', ...parts: (string | Node)[]): void {
   node.className = `feedback ${kind}`;

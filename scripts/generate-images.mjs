@@ -115,7 +115,7 @@ const ogSteelpan = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height=
   <text x="66" y="262" font-family="${DISPLAY}" font-weight="800" font-size="150" fill="#e6eef0" letter-spacing="2">STEEL</text>
   <text x="66" y="392" font-family="${DISPLAY}" font-weight="800" font-size="150" fill="#f6b23c" letter-spacing="2">PAN</text>
   <text x="72" y="448" font-family="${SANS}" font-size="27" fill="#c9d4d1">Play a steel drum in your browser —</text>
-  <text x="72" y="484" font-family="${SANS}" font-size="27" fill="#c9d4d1">and learn nine songs by following the lights.</text>
+  <text x="72" y="484" font-family="${SANS}" font-size="27" fill="#c9d4d1">and learn fifteen songs by following the lights.</text>
   ${footer('#f6b23c')}
 </svg>`;
 

@@ -21,13 +21,14 @@ describe('catalogue', () => {
 describe('song availability', () => {
   const slugs: InstrumentSlug[] = ['steelpan', 'theremin', 'glass-harp', 'harp'];
 
-  it.each(slugs)('the %s plays all nine songs', (slug) => {
-    expect(SONGS.filter((s) => isPlayable(slug, s))).toHaveLength(9);
+  it.each(slugs)('the %s plays all fifteen songs', (slug) => {
+    expect(SONGS.filter((s) => isPlayable(slug, s))).toHaveLength(15);
   });
 
   it('the C-major kalimba plays exactly the songs without accidentals', () => {
     const playable = SONGS.filter((s) => isPlayable('kalimba', s)).map((s) => s.id).sort();
-    expect(playable).toEqual(['amazing-grace', 'mary-had-a-little-lamb', 'ode-to-joy', 'oh-susanna', 'twinkle-twinkle', 'when-the-saints'].sort());
+    expect(playable).toEqual(['amazing-grace', 'mary-had-a-little-lamb', 'ode-to-joy', 'oh-susanna', 'twinkle-twinkle', 'when-the-saints',
+      'jingle-bells', 'silent-night', 'we-wish-you-a-merry-christmas', 'auld-lang-syne', 'happy-birthday', 'frere-jacques'].sort());
   });
 
   it('explains why a song is unavailable', () => {

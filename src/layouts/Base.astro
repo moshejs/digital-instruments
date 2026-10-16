@@ -2,7 +2,7 @@
 import '../styles/fonts.css';
 import '../styles/base.css';
 import SiteNav from '../components/SiteNav.astro';
-import { SITE, withBase } from '../lib/site';
+import { SERVICES, SITE, withBase } from '../lib/site';
 
 interface Props {
   title: string;
@@ -79,6 +79,12 @@ const imageUrl = new URL(withBase(image), Astro.site).href;
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content={SITE.shortName} />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    {SERVICES.googleVerification && <meta name="google-site-verification" content={SERVICES.googleVerification} />}
+    {SERVICES.bingVerification && <meta name="msvalidate.01" content={SERVICES.bingVerification} />}
+    {SERVICES.goatcounter && !noindex && (
+      <script is:inline async data-goatcounter={`https://${SERVICES.goatcounter}.goatcounter.com/count`} src="https://gc.zgo.at/count.js"></script>
+    )}
 
     {jsonLd.map((data) => <script type="application/ld+json" set:html={JSON.stringify(data)} />)}
     <slot name="head" />

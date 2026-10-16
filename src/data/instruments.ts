@@ -35,7 +35,7 @@ export const INSTRUMENTS: Instrument[] = [
     displayName: 'Steelpan',
     tagline: 'A Caribbean tenor pan you strike with a click, a tap or your keyboard.',
     description:
-      'Play a Caribbean steel drum in your browser. 25 hammered chrome note pads in the authentic circle-of-fifths layout, synthesized live with Web Audio, plus nine songs with a follow-the-lights play-along guide.',
+      'Play a Caribbean steel drum in your browser. 25 hammered chrome note pads in the authentic circle-of-fifths layout, synthesized live with Web Audio, plus fifteen songs with a follow-the-lights play-along guide.',
     keywords: ['steelpan', 'steel drum', 'online steel drum', 'virtual instrument', 'tenor pan', 'Web Audio', 'learn songs', 'Trinidad and Tobago'],
     specs: [
       ['Origin', 'Trinidad & Tobago, 1930s'],
@@ -59,7 +59,7 @@ export const INSTRUMENTS: Instrument[] = [
     displayName: 'Aetherwave',
     tagline: 'The instrument you play without touching. Hover, or tilt your phone through the air.',
     description:
-      'Play a theremin in your browser: glide your cursor for pitch and volume, or tilt and shake your phone. Live oscilloscope, portamento, vibrato, timbre and reverb controls, and nine songs with a follow-the-target guide.',
+      'Play a theremin in your browser: glide your cursor for pitch and volume, or tilt and shake your phone. Live oscilloscope, portamento, vibrato, timbre and reverb controls, and fifteen songs with a follow-the-target guide.',
     keywords: ['theremin', 'online theremin', 'virtual theremin', 'Web Audio', 'gyroscope instrument', 'oscilloscope', 'electronic music', 'Léon Theremin'],
     specs: [
       ['Origin', 'Léon Theremin, 1920'],

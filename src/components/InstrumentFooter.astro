@@ -1,6 +1,6 @@
 ---
 import { INSTRUMENTS, type Instrument } from '../data/instruments';
-import { withBase } from '../lib/site';
+import { SONG_REQUEST_URL, withBase } from '../lib/site';
 import { songPath, songsFor } from '../data/song-pages';
 
 interface Props {
@@ -22,6 +22,7 @@ const current = Astro.url.pathname;
         return <li><a href={href} aria-current={href === current ? 'page' : undefined}>{song.title}</a></li>;
       })}
     </ul>
+    <p class="suggest">Missing a song? <a href={SONG_REQUEST_URL} rel="noopener">Suggest one on GitHub</a></p>
   </nav>
   <p><slot /></p>
   <nav class="cat-nav" aria-label="More instruments">

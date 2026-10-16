@@ -10,8 +10,8 @@ const pads = buildPads();
 const padNotes = new Set(pads.map((p) => p.note));
 
 describe('songbook', () => {
-  it('has nine songs with unique, URL-safe ids', () => {
-    expect(SONGS).toHaveLength(9);
+  it('has fifteen songs with unique, URL-safe ids', () => {
+    expect(SONGS).toHaveLength(15);
     const ids = SONGS.map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (const id of ids) expect(id).toMatch(/^[a-z0-9-]+$/);

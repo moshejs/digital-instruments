@@ -42,7 +42,7 @@
     --line:      rgba(40,55,55,.14);
     --line-2:    rgba(40,55,55,.24);
     --ink:       #1c2b2c;
-    --ink-dim:   #51605a;
+    --ink-dim:   #45524d;
     --ink-faint: #52605d;
     --chrome-hi: #ffffff;
     --chrome-1:  #dfe7e9;
@@ -75,7 +75,7 @@
   --bg:#efe7d8; --bg-2:#f6f0e4; --spot:#f8e6c9;
   --panel:rgba(28,40,42,.045); --panel-2:rgba(28,40,42,.08);
   --line:rgba(40,55,55,.14); --line-2:rgba(40,55,55,.24);
-  --ink:#1c2b2c; --ink-dim:#51605a; --ink-faint:#52605d;
+  --ink:#1c2b2c; --ink-dim:#45524d; --ink-faint:#52605d;
   --chrome-hi:#ffffff; --chrome-1:#dfe7e9; --chrome-2:#a9b6ba; --chrome-3:#6f7c81; --chrome-4:#3c474b; --chrome-5:#232b2e;
   --pad-edge:rgba(255,255,255,.55);
   --amber:#d98410; --amber-2:#f0a52e; --amber-deep:#b96a06; --teal:#0a8f83; --teal-2:#12b4a5;

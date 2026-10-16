@@ -25,7 +25,7 @@ Five real instruments, synthesized note by note in your browser. No samples, no 
 
 ## Learning songs
 
-- 🎵 **Nine public-domain songs** — Twinkle Twinkle, Mary Had a Little Lamb, Ode to Joy, When the Saints Go Marching In, Amazing Grace, Oh! Susanna, Greensleeves, Scarborough Fair and Londonderry Air (Danny Boy).
+- 🎵 **Fifteen public-domain songs** — Twinkle Twinkle, Mary Had a Little Lamb, Ode to Joy, When the Saints Go Marching In, Amazing Grace, Oh! Susanna, Greensleeves, Scarborough Fair, Londonderry Air (Danny Boy), Jingle Bells, Silent Night, We Wish You a Merry Christmas, Auld Lang Syne, Happy Birthday and Frère Jacques.
 - ▶ **Listen** plays the tune; ◎ **Play Along** lights the next pad, tine, glass or string (or sweeps a target across the theremin and scores how long you stay on pitch).
 - 🔗 **A page for every song on every instrument** — `/kalimba/ode-to-joy/` opens the kalimba with the song ready, followed by a written lesson with every note in that instrument's notation (kalimba tabs, flats on the pan, lever settings on the harp). Old `?song=` links still work.
 - Each instrument only offers songs it can really play: the C-major kalimba explains which ones need sharps or flats. The harp sets its levers for each song's key and flips them mid-song when a melody needs it (Greensleeves uses both G and G♯).
@@ -71,7 +71,7 @@ tests/         note math, songbook, layouts, availability and harp lever logic
 
 ### SEO and sharing
 
-- **42 song pages** that search engines can read without JavaScript, each with its own title, description, canonical URL and 1200×630 card (`public/og/songs/`). Song links are plain `<a>` tags, in the footer of every instrument page and in the home page songbook.
+- **72 song pages** that search engines can read without JavaScript, each with its own title, description, canonical URL and 1200×630 card (`public/og/songs/`). Song links are plain `<a>` tags, in the footer of every instrument page and in the home page songbook.
 - Open Graph and Twitter cards on every page; schema.org JSON-LD (`WebSite`, `ItemList`, `WebApplication`, `LearningResource` + `MusicComposition`, `BreadcrumbList`).
 - A sitemap with `lastmod` (taken from the last commit), `robots.txt`, and [`/llms.txt`](https://moshejs.github.io/digital-instruments/llms.txt) for AI assistants.
 - Per-instrument SVG favicons, PNG/ICO fallbacks, an Apple touch icon and an installable web manifest with shortcuts to each instrument.

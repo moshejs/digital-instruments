@@ -1,0 +1,34 @@
+name: Song request
+description: Suggest a song to add to the instruments.
+title: "Song request: "
+labels: ["song request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. Songs need to be in the public domain (traditional tunes, folk songs, hymns, carols, classical pieces, or anything old enough), so recent pop songs can't be added.
+  - type: input
+    id: song
+    attributes:
+      label: Song
+      description: The title, and the composer if you know it.
+      placeholder: "e.g. Deck the Halls"
+    validations:
+      required: true
+  - type: dropdown
+    id: instruments
+    attributes:
+      label: Which instruments?
+      multiple: true
+      options:
+        - Any
+        - Steelpan
+        - Theremin
+        - Kalimba
+        - Glass harp
+        - Lever harp
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else?
+      description: A version you know, a link to a recording, or why you'd like it.

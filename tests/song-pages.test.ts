@@ -5,8 +5,8 @@ import { notate, pageDescription, pageTitle, phrases, songPages, songPath } from
 describe('song pages', () => {
   const pages = songPages();
 
-  it('makes one page per playable song: nine per instrument, six on the C-major kalimba', () => {
-    expect(pages).toHaveLength(9 * 4 + 6);
+  it('makes one page per playable song: fifteen per instrument, twelve on the C-major kalimba', () => {
+    expect(pages).toHaveLength(15 * 4 + 12);
     expect(new Set(pages.map((p) => songPath(p.instrument.slug, p.song.id))).size).toBe(pages.length);
   });
 

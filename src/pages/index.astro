@@ -9,7 +9,7 @@ import { buildTines } from '../lib/kalimba-layout';
 import { buildGlasses } from '../lib/glass-layout';
 import { HARP_STRINGS, leverPreset, pitchOf, stringGeometry } from '../lib/harp';
 import { REST, midiToName } from '../lib/music';
-import { SITE, withBase } from '../lib/site';
+import { SITE, SONG_REQUEST_URL, withBase } from '../lib/site';
 
 const home = new URL(withBase(), Astro.site).href;
 const pads = buildPads();
@@ -62,7 +62,7 @@ const jsonLd = [
       <div class="signal" aria-hidden="true"></div>
       <p class="lede">
         Real instruments, synthesized note by note in your browser. Strike, hover, tap, rub or strum.
-        No samples, no installs, and nine songs to learn with a guide that lights the way.
+        No samples, no installs, and fifteen songs to learn with a guide that lights the way.
       </p>
     </header>
 
@@ -125,7 +125,7 @@ const jsonLd = [
     <section class="songbook" id="songbook" aria-labelledby="songbook-title">
       <div class="section-head">
         <h2 id="songbook-title">The Songbook</h2>
-        <p>Nine public-domain melodies. Each was transcribed, then re-derived note by note by an independent second pass that corrected mistakes before they shipped. Every song plays on every instrument that has its notes (the C-major kalimba sits out the ones with sharps and flats).</p>
+        <p>Fifteen public-domain melodies, from nursery tunes to carols. Each link opens the instrument with the song ready to play and every note written out underneath. The C-major kalimba sits out the songs with sharps and flats.</p>
       </div>
       <div class="table-wrap">
         <table>
@@ -158,6 +158,7 @@ const jsonLd = [
           </tbody>
         </table>
       </div>
+      <p class="suggest">Missing a song? <a href={SONG_REQUEST_URL} rel="noopener">Suggest one on GitHub</a>. It needs to be in the public domain: folk songs, hymns, carols and classical pieces all work.</p>
     </section>
 
     <section class="workshop" aria-labelledby="workshop-title">
@@ -220,10 +221,10 @@ const jsonLd = [
   }
 
   /* ── hero ── */
-  .hero { padding: clamp(40px, 8vw, 96px) 0 clamp(28px, 5vw, 56px); }
+  .hero { padding: clamp(28px, 5vw, 56px) 0 clamp(24px, 3vw, 40px); }
   h1 { margin: 0; font-family: var(--display); text-transform: uppercase; line-height: 0.86; text-wrap: balance; }
   h1 .owner { display: block; font-weight: 700; font-size: clamp(22px, 3.4vw, 40px); letter-spacing: 0.18em; color: var(--ink-2); }
-  h1 .word { display: block; font-weight: 800; font-size: clamp(54px, 12.5vw, 168px); letter-spacing: 0.01em; }
+  h1 .word { display: block; font-weight: 800; font-size: clamp(54px, 8.6vw, 120px); letter-spacing: 0.01em; }
   .signal {
     height: 3px; width: min(100%, 760px); margin: clamp(18px, 3vw, 28px) 0; border-radius: 3px;
     background: linear-gradient(90deg, #f6b23c, #ff8a4c 22%, #f3cf86 40%, #5cf2d6 62%, #b8a6ff 82%, #ff5db0);
@@ -327,6 +328,8 @@ const jsonLd = [
   @media (max-width: 760px) { .section-head { grid-template-columns: 1fr; } }
   .section-head h2, .section-title { margin: 0; font-family: var(--display); font-weight: 800; font-size: clamp(36px, 5vw, 64px); text-transform: uppercase; line-height: 0.9; }
   .section-head p { margin: 0; color: var(--ink-2); line-height: 1.6; max-width: 66ch; }
+  .songbook .suggest { margin: 16px 0 0; color: var(--ink-2); font-size: 15px; max-width: 66ch; }
+  .songbook .suggest a { color: var(--ink); text-underline-offset: 3px; }
   .table-wrap { overflow-x: auto; border-top: 1px solid var(--rule); }
   table { width: 100%; border-collapse: collapse; min-width: 900px; font-size: 14.5px; }
   th, td { text-align: left; padding: 12px 12px 12px 0; border-bottom: 1px solid var(--rule); vertical-align: middle; }

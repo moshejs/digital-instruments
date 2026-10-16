@@ -5,6 +5,7 @@
  */
 import { REST, centsBetween, freqInfo, midiToFreq, noteToFreq, snapFreq, type ScaleMode } from '../lib/music';
 import { createAudioContext, makeImpulse } from '../lib/audio';
+import { track } from '../lib/analytics';
 import { FIELD_MAX_MIDI, FIELD_MIN_MIDI, freqToX, tiltToControl, xToFreq, yToVolume } from '../lib/theremin-field';
 import { SONGS, findSong, playableCount, type Song } from '../data/songs';
 import {
@@ -619,6 +620,7 @@ class Player {
 
   guide(): void {
     if (!this.song || !this.ensurePower()) return;
+    track(`play-along/theremin/${this.song.id}`);
     this.clearTimers();
     this.mode = 'guide';
     this.el.now.classList.remove('idle');
@@ -664,6 +666,7 @@ class Player {
   private finishGuide(): void {
     const accuracy = this.totalFrames ? Math.round((100 * this.onFrames) / this.totalFrames) : 0;
     this.finish(`On pitch ${accuracy}% of the time`);
+    if (this.song) track(`finished/theremin/${this.song.id}`);
     const verdict = accuracy >= 75 ? 'Beautiful control!' : accuracy >= 45 ? 'Nice — the glide is tricky, keep at it.' : 'Keep chasing the band — it gets easier.';
     this.feedback(accuracy >= 45 ? 'good' : 'info', 'Play-along complete — ', b(`${accuracy}%`), ` on pitch. ${verdict}`);
     announce(`Play-along complete. ${accuracy} percent on pitch.`);
@@ -743,7 +746,7 @@ function init(): void {
   $('power').addEventListener('click', powerOn);
 
   const buttons = renderSongList($('songList'), SONGS, (song) => {
-    if (setSongInUrl(song.id)) return; // opening that song's own page
+    if (setSongInUrl(song.id, song.title)) return; // opening that song's own page
     markActive(buttons, song.id);
     powerOn();
     player.load(song);
@@ -791,7 +794,7 @@ function init(): void {
   const linked = findSong(songIdFromUrl());
   if (linked) {
     markActive(buttons, linked.id);
-    setSongInUrl(linked.id);
+    setSongInUrl(linked.id, linked.title);
     player.load(linked, { scroll: false });
   }
 }
