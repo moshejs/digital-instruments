@@ -18,6 +18,7 @@ import { INSTRUMENTS } from '../data/instruments';
       {INSTRUMENTS.map((i) => <li><a href={withBase(`${i.slug}/`)} style={`--hover:${i.accent}`}>{i.name}</a></li>)}
       <li><a href={withBase()}>All instruments</a></li>
     </ul>
+    <p class="credit">Built by <a href="https://www.quentin.software/">Quentin.Code</a></p>
   </main>
 </Base>
 
@@ -33,4 +34,6 @@ import { INSTRUMENTS } from '../data/instruments';
   .links a { display: inline-flex; align-items: center; min-height: 44px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; text-decoration: none; color: #edeae3; border: 1px solid rgba(237, 234, 227, 0.2); padding: 0 14px; border-radius: 4px; }
   .links a:hover { border-color: var(--hover, #edeae3); color: var(--hover, #edeae3); }
   .links a:focus-visible { outline: 2px solid #5cf2d6; outline-offset: 2px; }
+  .credit { margin-top: 40px; font-size: 13px; }
+  .credit a { color: #edeae3; }
 </style>
