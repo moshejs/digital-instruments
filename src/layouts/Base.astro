@@ -31,6 +31,9 @@ const {
   noindex = false,
 } = Astro.props;
 
+// Google Analytics 4 measurement ID (public). PUBLIC_GA_ID overrides it at build time.
+const gaId = import.meta.env.PUBLIC_GA_ID || 'G-N8P0ZQD3E3';
+
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const imageUrl = new URL(withBase(image), Astro.site).href;
 ---
@@ -85,6 +88,34 @@ const imageUrl = new URL(withBase(image), Astro.site).href;
     {SERVICES.goatcounter && !noindex && (
       <script is:inline async data-goatcounter={`https://${SERVICES.goatcounter}.goatcounter.com/count`} src="https://gc.zgo.at/count.js"></script>
     )}
+
+    <!-- Google Analytics 4 (Consent Mode v2). Skipped on localhost, *.local and Vercel preview hosts. -->
+    <script is:inline define:vars={{ gaId }}>
+      (function () {
+        var h = location.hostname;
+        if (h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || /\.local$/.test(h) ||
+            h.indexOf('-git-') !== -1 || /-[a-z0-9]{9}-[a-z0-9-]+\.vercel\.app$/.test(h)) return;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        window.gtag = gtag;
+        gtag('consent', 'default', {
+          ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied',
+          analytics_storage: 'denied',
+          region: ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'],
+          wait_for_update: 500
+        });
+        gtag('consent', 'default', {
+          ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted',
+          analytics_storage: 'granted'
+        });
+        gtag('js', new Date());
+        gtag('config', gaId);
+      })();
+    </script>
 
     {jsonLd.map((data) => <script type="application/ld+json" set:html={JSON.stringify(data)} />)}
     <slot name="head" />
