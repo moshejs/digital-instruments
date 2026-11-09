@@ -3,6 +3,7 @@
  * (https://llmstxt.org): what each instrument is, and every song page.
  */
 import type { APIRoute } from 'astro';
+import { hasSongs } from '../data/availability';
 import { INSTRUMENTS, fullName } from '../data/instruments';
 import { pageDescription, pageTitle, songPath, songsFor } from '../data/song-pages';
 import { SITE, withBase } from '../lib/site';
@@ -19,7 +20,7 @@ export const GET: APIRoute = ({ site }) => {
     '## Instruments',
     '',
     ...INSTRUMENTS.map((i) => `- [${fullName(i)}](${abs(`${i.slug}/`)}): ${i.description}`),
-    ...INSTRUMENTS.flatMap((i) => [
+    ...INSTRUMENTS.filter((i) => hasSongs(i.slug)).flatMap((i) => [
       '',
       `## Songs on the ${i.name.toLowerCase()}`,
       '',

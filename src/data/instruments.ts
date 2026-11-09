@@ -147,6 +147,30 @@ export const INSTRUMENTS: Instrument[] = [
     themeColor: '#140b0e',
     credit: 'Every string is <b>physically modelled</b> with Karplus–Strong synthesis. All songs are <b>public-domain / traditional</b>.',
   },
+  {
+    slug: 'subtractive-synth',
+    short: 'Synth',
+    catalogNo: 'No. 06',
+    name: 'Subtractive Synth',
+    displayName: 'Subtractive Synth',
+    tagline: 'A raw oscillator, carved by a filter, shaped by an envelope and thrown into a room. See the sound as you make it.',
+    description:
+      'A playable subtractive synthesizer in your browser, with a live oscilloscope and spectrum. Hear and see how an oscillator, lowpass filter, ADSR envelope and reverb build a sound, explained step by step.',
+    keywords: ['subtractive synthesis', 'online synthesizer', 'browser synth', 'how a synth works', 'oscilloscope', 'spectrum analyzer', 'ADSR envelope', 'lowpass filter', 'Web Audio'],
+    specs: [
+      ['Voice', 'Sine · saw · square · triangle'],
+      ['Range', 'C1 – F7 · octave buttons'],
+      ['Shape', 'Filter · ADSR · reverb'],
+      ['Play with', 'Keys · touch · chords'],
+      ['See it', 'Oscilloscope + spectrum'],
+    ],
+    cta: 'Play the synth',
+    accent: '#c07cff',
+    pageTitle: 'Subtractive Synth — How a Synth Makes Sound',
+    imageAlt: 'A violet oscilloscope trace and a comb of spectrum bars above a small piano keyboard, on a dark instrument panel.',
+    themeColor: '#0a0b0e',
+    credit: 'Every voice is <b>synthesized live</b> with the Web Audio API. Originally Exhibit 02 of The Lab, handmade interactive explainers: <a class="foot-link" href="https://github.com/moshejs/subtractive-synth" rel="noopener">moshejs/subtractive-synth</a>, MIT.',
+  },
 ];
 
 export const instrumentBySlug = (slug: Instrument['slug']): Instrument =>

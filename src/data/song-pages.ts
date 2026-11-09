@@ -8,7 +8,7 @@ import { kalimbaNumber } from '../lib/kalimba-layout';
 import { countFlips, leverPreset, stringLabel } from '../lib/harp';
 import { SONGS, playableCount, type NoteEvent, type Song } from './songs';
 import { INSTRUMENTS, fullName, type Instrument } from './instruments';
-import { isPlayable, type InstrumentSlug } from './availability';
+import { isPlayable, type InstrumentSlug, type SongInstrumentSlug } from './availability';
 import { SITE, withBase } from '../lib/site';
 
 export interface SongPage {
@@ -73,7 +73,7 @@ interface Copy {
   tip: string;
 }
 
-const COPY: Record<InstrumentSlug, Copy> = {
+const COPY: Record<SongInstrumentSlug, Copy> = {
   steelpan: {
     title: (s) => `${s.title} on Steel Drum — Notes & Play-Along`,
     notation: 'note names spelled with flats',
@@ -106,15 +106,18 @@ const COPY: Record<InstrumentSlug, Copy> = {
   },
 };
 
-export const pageTitle = ({ instrument, song }: SongPage): string => COPY[instrument.slug].title(song);
+/** Song pages only exist for instruments with songs (see songsFor), so the cast can't miss. */
+const copyFor = (slug: InstrumentSlug): Copy => COPY[slug as SongInstrumentSlug];
+
+export const pageTitle = ({ instrument, song }: SongPage): string => copyFor(instrument.slug).title(song);
 
 export function pageDescription({ instrument, song }: SongPage): string {
-  const c = COPY[instrument.slug];
+  const c = copyFor(instrument.slug);
   const guide = instrument.slug === 'theremin' ? 'shows where to hold your hand' : `lights ${c.target}`;
   return `Learn ${song.title} on the ${instrument.name.toLowerCase()}: ${c.notation}, and a free play-along that ${guide}. ${playableCount(song)} notes, ${song.key}.`;
 }
 
-export const lessonCopy = (slug: InstrumentSlug): Copy => COPY[slug];
+export const lessonCopy = (slug: InstrumentSlug): Copy => copyFor(slug);
 
 /** schema.org: a learning resource about the composition, plus breadcrumbs. */
 export function songJsonLd(page: SongPage, url: string, image: string, site: URL): Record<string, unknown>[] {

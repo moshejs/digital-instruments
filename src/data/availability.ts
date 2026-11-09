@@ -10,13 +10,18 @@ import { fingeringsFor } from '../lib/harp';
 import { FIELD_MAX_MIDI, FIELD_MIN_MIDI } from '../lib/theremin-field';
 import type { Song } from './songs';
 
-export type InstrumentSlug = 'steelpan' | 'theremin' | 'kalimba' | 'glass-harp' | 'harp';
+/** Instruments with a songbook: a guide, a song library and a page per song. */
+export type SongInstrumentSlug = 'steelpan' | 'theremin' | 'kalimba' | 'glass-harp' | 'harp';
+export type InstrumentSlug = SongInstrumentSlug | 'subtractive-synth';
+
+/** The subtractive synth teaches sound design instead: its page is the explainer. */
+export const hasSongs = (slug: InstrumentSlug): slug is SongInstrumentSlug => slug !== 'subtractive-synth';
 
 const padNotes = new Set(buildPads().map((p) => p.note));
 const kalimbaNotes = new Set(KALIMBA_NOTES);
 const glassNotes = new Set(buildGlasses().map((g) => g.note));
 
-const canPlay: Record<InstrumentSlug, (note: string) => boolean> = {
+const canPlay: Record<SongInstrumentSlug, (note: string) => boolean> = {
   steelpan: (n) => padNotes.has(n),
   theremin: (n) => {
     const m = noteToMidi(n);
@@ -32,6 +37,7 @@ const pretty = (note: string) => note.replace('#', '♯');
 
 /** Why a song can't be played on an instrument, or null if it can. */
 export function unavailableReason(slug: InstrumentSlug, song: Song): string | null {
+  if (!hasSongs(slug)) return 'This instrument has no song guide';
   const missing = new Set<string>();
   for (const n of song.notes) if (n.note !== REST && !canPlay[slug](n.note)) missing.add(midiToName(noteToMidi(n.note)));
   if (missing.size === 0) return null;

@@ -1,8 +1,8 @@
 # Moshe's Digital Instruments
 
-![Moshe's Digital Instruments — five instruments synthesized live in the browser](public/og/home.png)
+![Moshe's Digital Instruments — six instruments synthesized live in the browser](public/og/home.png)
 
-Five real instruments, synthesized note by note in your browser. No samples, no installs, no plugins — just the Web Audio API and the physics of each instrument.
+Six instruments, synthesized note by note in your browser. No samples, no installs, no plugins — just the Web Audio API and the physics of each instrument.
 
 **▶ Play now: [moshejs.github.io/digital-instruments](https://moshejs.github.io/digital-instruments/)**
 
@@ -10,8 +10,8 @@ Five real instruments, synthesized note by note in your browser. No samples, no 
 |---|---|---|
 | [![Steelpan](public/og/steelpan.png)](https://moshejs.github.io/digital-instruments/steelpan/) | [![Theremin](public/og/theremin.png)](https://moshejs.github.io/digital-instruments/theremin/) | [![Kalimba](public/og/kalimba.png)](https://moshejs.github.io/digital-instruments/kalimba/) |
 | **[No. 01 — Steelpan](https://moshejs.github.io/digital-instruments/steelpan/)**<br>Strike 25 chrome pads in the authentic circle-of-fifths layout. | **[No. 02 — Theremin "Aetherwave"](https://moshejs.github.io/digital-instruments/theremin/)**<br>Play without touching — hover, or tilt and shake your phone. | **[No. 03 — Kalimba](https://moshejs.github.io/digital-instruments/kalimba/)**<br>Tap or sweep 17 steel tines; read real kalimba number tabs. |
-| [![Glass Harp](public/og/glass-harp.png)](https://moshejs.github.io/digital-instruments/glass-harp/) | [![Lever Harp](public/og/harp.png)](https://moshejs.github.io/digital-instruments/harp/) | |
-| **[No. 04 — Glass Harp](https://moshejs.github.io/digital-instruments/glass-harp/)**<br>Circle a rim to make a glass sing; faster is louder, many fingers make chords. | **[No. 05 — Lever Harp](https://moshejs.github.io/digital-instruments/harp/)**<br>Pluck or drag for glissandos; sharping levers flip themselves for each song. | |
+| [![Glass Harp](public/og/glass-harp.png)](https://moshejs.github.io/digital-instruments/glass-harp/) | [![Lever Harp](public/og/harp.png)](https://moshejs.github.io/digital-instruments/harp/) | [![Subtractive Synth](public/og/subtractive-synth.png)](https://moshejs.github.io/digital-instruments/subtractive-synth/) |
+| **[No. 04 — Glass Harp](https://moshejs.github.io/digital-instruments/glass-harp/)**<br>Circle a rim to make a glass sing; faster is louder, many fingers make chords. | **[No. 05 — Lever Harp](https://moshejs.github.io/digital-instruments/harp/)**<br>Pluck or drag for glissandos; sharping levers flip themselves for each song. | **[No. 06 — Subtractive Synth](https://moshejs.github.io/digital-instruments/subtractive-synth/)**<br>Carve a raw oscillator with a filter, envelope and reverb, and watch it on a live oscilloscope and spectrum. |
 
 ## The instruments
 
@@ -22,8 +22,11 @@ Five real instruments, synthesized note by note in your browser. No samples, no 
 | **Kalimba** | Tap or sweep tines; keys `1`–`7`, `Q`–`U`, `A S D` | Clamped-tine cantilever modes at 1 : 6.27 : 17.55, a thumb click and a wooden-box resonance |
 | **Glass Harp** | Press and circle a rim (speed = loudness), multi-touch chords, or hold keys | Glass bending modes with a detuned twin for shimmer, plus band-passed friction noise |
 | **Lever Harp** | Pluck, drag across to strum, keys `1`–`7`, `Q`–`U`, `I`; `Shift`+key flips a lever | Karplus–Strong plucked strings with a soundboard resonance; E♭ tuning with sharping levers |
+| **Subtractive Synth** | Tap or hold keys for chords; `A`–`K` white keys, `W E T Y U` black keys, `Z` / `X` octave | One oscillator per note through a lowpass filter and ADSR envelope, then a convolver reverb, with a live oscilloscope and spectrum |
 
 ## Learning songs
+
+The subtractive synth has no songs: its page is a written explanation of how a synth makes sound, played as you read.
 
 - 🎵 **Fifteen public-domain songs** — Twinkle Twinkle, Mary Had a Little Lamb, Ode to Joy, When the Saints Go Marching In, Amazing Grace, Oh! Susanna, Greensleeves, Scarborough Fair, Londonderry Air (Danny Boy), Jingle Bells, Silent Night, We Wish You a Merry Christmas, Auld Lang Syne, Happy Birthday and Frère Jacques.
 - ▶ **Listen** plays the tune; ◎ **Play Along** lights the next pad, tine, glass or string (or sweeps a target across the theremin and scores how long you stay on pitch).
@@ -50,7 +53,7 @@ npm run icons      # regenerate favicons, app icons and social cards
 ```
 src/
   data/        songs.ts (shared songbook) · instruments.ts (catalogue, structured data) · availability.ts (which songs fit which instrument) · song-pages.ts (song pages: notation, copy, JSON-LD)
-  lib/         music.ts · keyboard.ts · steelpan-layout.ts · theremin-field.ts · kalimba-layout.ts · glass-layout.ts · harp.ts (levers + geometry) · audio.ts · site.ts
+  lib/         music.ts · keyboard.ts · steelpan-layout.ts · theremin-field.ts · kalimba-layout.ts · glass-layout.ts · harp.ts (levers + geometry) · synth.ts (patches + keyboard) · audio.ts · site.ts
   scripts/     one engine per instrument · shared/guide-player.ts (Listen / Play Along) · shared/song-ui.ts
   instruments/ one component per instrument: its header, stage, coach, songs and settings
   components/  SiteNav · CoachBand · SongLibrary · SettingsCard · SongSheet (the written lesson) · InstrumentFooter
@@ -63,7 +66,7 @@ tests/         note math, songbook, layouts, availability and harp lever logic
 
 ### Adding an instrument
 
-1. Add its layout/logic to `src/lib/` and its slug to `InstrumentSlug` and `canPlay` in `src/data/availability.ts`.
+1. Add its layout/logic to `src/lib/` and its slug to `SongInstrumentSlug` and `canPlay` in `src/data/availability.ts`.
 2. Add catalogue metadata to `src/data/instruments.ts`.
 3. Write an engine in `src/scripts/` and call `mountGuide(slug, host, copy)` — the `GuideHost` only needs `unlock`, `perform` and `showTarget`.
 4. Create `src/instruments/<Name>.astro` (header, stage, `CoachBand`, `SongLibrary`, `SettingsCard`) and a stylesheet that sets the shared colour tokens, then `src/pages/<slug>/index.astro` and `[song].astro` that wrap it in `InstrumentPage`. Add its lesson copy to `COPY` in `src/data/song-pages.ts`.
@@ -83,3 +86,5 @@ Pushing to `main` runs `.github/workflows/deploy.yml`: type-check → test → b
 ## License
 
 [MIT](LICENSE) © 2026 Moshe Malka. All melodies are in the public domain.
+
+The subtractive synth and its explainer were first published as [moshejs/subtractive-synth](https://github.com/moshejs/subtractive-synth), Exhibit 02 of The Lab, under the same MIT licence and copyright holder.

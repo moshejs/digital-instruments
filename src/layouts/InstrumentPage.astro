@@ -8,7 +8,7 @@ import Base from './Base.astro';
 import SongSheet from '../components/SongSheet.astro';
 import InstrumentFooter from '../components/InstrumentFooter.astro';
 import { instrumentBySlug, instrumentJsonLd, breadcrumbJsonLd } from '../data/instruments';
-import type { InstrumentSlug } from '../data/availability';
+import { hasSongs, type InstrumentSlug } from '../data/availability';
 import type { Song } from '../data/songs';
 import { pageDescription, pageTitle, songImage, songJsonLd } from '../data/song-pages';
 import { SITE, withBase } from '../lib/site';
@@ -36,8 +36,9 @@ const page = song ? { instrument: inst, song } : null;
   themeColor={inst.themeColor}
   favicon={`favicon-${slug}.svg`}
 >
+  <slot name="head" slot="head" />
   <main class="shell" id="main" data-instrument-path={withBase(`${slug}/`)} data-song={song?.id}>
-    <a class="skip-link" href="#songs">Skip to songs</a>
+    {hasSongs(slug) ? <a class="skip-link" href="#songs">Skip to songs</a> : <a class="skip-link" href="#explainer">Skip to the explanation</a>}
     <slot />
     {page && <SongSheet {...page} />}
     <InstrumentFooter slug={slug}><Fragment set:html={inst.credit} /></InstrumentFooter>

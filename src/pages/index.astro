@@ -2,16 +2,22 @@
 import Base from '../layouts/Base.astro';
 import { INSTRUMENTS, fullName } from '../data/instruments';
 import { SONGS, findSong } from '../data/songs';
-import { unavailableReason } from '../data/availability';
+import { hasSongs, unavailableReason } from '../data/availability';
 import { songPath } from '../data/song-pages';
 import { buildPads } from '../lib/steelpan-layout';
 import { buildTines } from '../lib/kalimba-layout';
 import { buildGlasses } from '../lib/glass-layout';
 import { HARP_STRINGS, leverPreset, pitchOf, stringGeometry } from '../lib/harp';
 import { REST, midiToName } from '../lib/music';
+import { WIDE_KEYS, keyMidi, layoutKeys } from '../lib/synth';
 import { SITE, SONG_REQUEST_URL, withBase } from '../lib/site';
 
 const home = new URL(withBase(), Astro.site).href;
+const songInstruments = INSTRUMENTS.filter((i) => hasSongs(i.slug));
+// the mini synth keyboard, whites first so the blacks stack on top
+const miniKeys = layoutKeys(WIDE_KEYS).sort((a, b) => Number(a.black) - Number(b.black)).map((k) => ({ ...k, note: midiToName(keyMidi(4, k.semi)) }));
+// a sawtooth's comb of harmonics, falling away past a lowpass cutoff
+const miniBars = Array.from({ length: 28 }, (_, i) => Math.round((100 / Math.sqrt(i + 1)) * (i > 15 ? Math.pow(0.72, i - 15) : 1)));
 const pads = buildPads();
 const tines = buildTines();
 const glasses = buildGlasses();
@@ -46,11 +52,11 @@ const jsonLd = [
 ---
 
 <Base
-  title={`${SITE.name} — Five Instruments in Your Browser`}
+  title={`${SITE.name} — Six Instruments in Your Browser`}
   description={SITE.description}
   image="og/home.png"
-  imageAlt="Moshe's Digital Instruments: a steelpan, a theremin waveform, a kalimba, glasses and harp strings."
-  keywords={['online instruments', 'browser instruments', 'virtual steel drum', 'online theremin', 'online kalimba', 'glass harp', 'online harp', 'Web Audio API', 'learn music', 'play along', 'public domain songs']}
+  imageAlt="Moshe's Digital Instruments: a steelpan, a theremin waveform, a kalimba, glasses, harp strings and a synth."
+  keywords={['online instruments', 'browser instruments', 'virtual steel drum', 'online theremin', 'online kalimba', 'glass harp', 'online harp', 'online synthesizer', 'Web Audio API', 'learn music', 'play along', 'public domain songs']}
   jsonLd={jsonLd}
 >
   <main class="home" id="main">
@@ -61,7 +67,7 @@ const jsonLd = [
       </h1>
       <div class="signal" aria-hidden="true"></div>
       <p class="lede">
-        Real instruments, synthesized note by note in your browser. Strike, hover, tap, rub or strum.
+        Real instruments, synthesized note by note in your browser. Strike, hover, tap, rub, strum or sculpt.
         No samples, no installs, and fifteen songs to learn with a guide that lights the way.
       </p>
     </header>
@@ -111,6 +117,14 @@ const jsonLd = [
                 {harpStrings.map((s) => <line x1={s.x} x2={s.x} y1={s.top} y2={s.bottom} class={`mh-str ${s.colour}`} data-note={s.note} />)}
               </svg>
             )}
+            {inst.slug === 'subtractive-synth' && (
+              <div class="mini-synth" data-mini-song="twinkle-twinkle">
+                <div class="ms-bars">{miniBars.map((h) => <span style={`height:${h}%`} />)}</div>
+                <div class="ms-keys">
+                  {miniKeys.map((k) => <span class={`ms-key ${k.black ? 'black' : 'white'}`} data-note={k.note} style={`left:${k.left}%;width:${k.width}%`} />)}
+                </div>
+              </div>
+            )}
           </div>
 
           <p class="tagline">{inst.tagline}</p>
@@ -125,7 +139,7 @@ const jsonLd = [
     <section class="songbook" id="songbook" aria-labelledby="songbook-title">
       <div class="section-head">
         <h2 id="songbook-title">The Songbook</h2>
-        <p>Fifteen public-domain melodies, from nursery tunes to carols. Each link opens the instrument with the song ready to play and every note written out underneath. The C-major kalimba sits out the songs with sharps and flats.</p>
+        <p>Fifteen public-domain melodies, from nursery tunes to carols. Each link opens the instrument with the song ready to play and every note written out underneath. The C-major kalimba sits out the songs with sharps and flats, and the synth is for sound design, so it has no songs of its own.</p>
       </div>
       <div class="table-wrap">
         <table>
@@ -146,7 +160,7 @@ const jsonLd = [
                 <td data-label="Key">{s.key}</td>
                 <td data-label="Level"><span class={`level ${s.difficulty.toLowerCase()}`}>{s.difficulty}</span></td>
                 <td class="play">
-                  {INSTRUMENTS.map((inst) => {
+                  {songInstruments.map((inst) => {
                     const reason = unavailableReason(inst.slug, s);
                     return reason
                       ? <span class="go na" title={`${inst.name}: ${reason}`}>{inst.short}<span class="sr-only"> — not available: {reason}</span></span>
@@ -166,7 +180,7 @@ const jsonLd = [
       <div class="notes">
         <div>
           <h3>Synthesized, not sampled</h3>
-          <p>Each instrument uses the physics of the real thing: tuned partials over a metallic strike for the pan, cantilever-beam modes for kalimba tines, friction-driven glass modes, Karplus–Strong for harp strings, and one gliding oscillator voice for the theremin.</p>
+          <p>Each instrument uses the physics of the real thing: tuned partials over a metallic strike for the pan, cantilever-beam modes for kalimba tines, friction-driven glass modes, Karplus–Strong for harp strings, one gliding oscillator voice for the theremin, and a filtered, enveloped oscillator for each note on the synth.</p>
         </div>
         <div>
           <h3>Learn by following the light</h3>
@@ -174,7 +188,7 @@ const jsonLd = [
         </div>
         <div>
           <h3>Played with your body</h3>
-          <p>Strike the pan, hover over the theremin (or tilt your phone), tap or sweep the kalimba tines, circle the glass rims with as many fingers as you like, and drag across the harp for a glissando.</p>
+          <p>Strike the pan, hover over the theremin (or tilt your phone), tap or sweep the kalimba tines, circle the glass rims with as many fingers as you like, drag across the harp for a glissando, and hold a chord on the synth while you sweep its filter.</p>
         </div>
       </div>
     </section>
@@ -236,18 +250,15 @@ const jsonLd = [
   .lede { margin: 0; max-width: 62ch; font-size: clamp(16px, 1.6vw, 19px); line-height: 1.6; color: var(--ink-2); }
 
   /* ── catalogue plates ── */
-  /* five plates: three across, then two wider ones, so the grid has no holes */
+  /* six plates: three across, twice, so the grid has no holes */
   .catalogue { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: clamp(14px, 2vw, 24px); }
   .plate { grid-column: span 2; }
-  .plate:nth-child(n + 4) { grid-column: span 3; }
   @media (max-width: 1100px) {
     .catalogue { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .plate, .plate:nth-child(n + 4) { grid-column: span 1; }
-    .plate:last-child { grid-column: span 2; }
+    .plate { grid-column: span 1; }
   }
   @media (max-width: 700px) {
     .catalogue { grid-template-columns: 1fr; }
-    .plate:last-child { grid-column: span 1; }
   }
   .plate {
     position: relative; display: flex; flex-direction: column; gap: 16px;
@@ -317,6 +328,17 @@ const jsonLd = [
   .mh-str.c { stroke: #e0503f; }
   .mh-str.f { stroke: #7896f2; }
   .mh-str.on { stroke: #ffe4ad; stroke-width: 5; filter: drop-shadow(0 0 6px #f3cf86); }
+
+  /* subtractive synth */
+  .v-subtractive-synth { background: radial-gradient(70% 70% at 50% 10%, rgba(192, 124, 255, 0.18), transparent 70%), #0a0b0e; }
+  .mini-synth { position: absolute; inset: 8% 7%; display: grid; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); gap: 8%; }
+  .ms-bars { display: flex; align-items: flex-end; gap: 2px; min-height: 0; }
+  .ms-bars span { flex: 1; background: linear-gradient(180deg, #c07cff, rgba(192, 124, 255, 0.32)); }
+  .ms-keys { position: relative; min-height: 0; }
+  .ms-key { position: absolute; top: 0; border-radius: 0 0 3px 3px; transition: background 0.2s, box-shadow 0.2s; }
+  .ms-key.white { height: 100%; background: linear-gradient(180deg, #f6f7fb, #d9dde6); border: 1px solid #8f96a6; border-top: 0; }
+  .ms-key.black { height: 60%; background: linear-gradient(180deg, #2b303c, #10131b); z-index: 1; }
+  .ms-key.on { background: #c07cff; box-shadow: 0 0 12px rgba(192, 124, 255, 0.8); }
 
   .specs { margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); border-top: 1px solid var(--rule); }
   .specs div { padding: 9px 0; border-bottom: 1px solid var(--rule); }

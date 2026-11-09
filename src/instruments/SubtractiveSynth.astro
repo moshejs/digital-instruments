@@ -1,0 +1,141 @@
+---
+/**
+ * The subtractive synth: its header, the playable panel with oscilloscope and spectrum,
+ * and the written explainer. It has no songs: the explainer takes the place of the
+ * coach and song library the other instruments have.
+ *
+ * Ported from https://github.com/moshejs/subtractive-synth (MIT, © 2026 Moshe Malka).
+ */
+import Icon from '../components/Icon.astro';
+import '../styles/instrument.css';
+import '../styles/subtractive-synth.css';
+
+const sliders = [
+  { id: 'cutoff', label: 'Cutoff', value: '8.0 kHz', min: 0, max: 1, step: 0.001, start: 0.94 },
+  { id: 'resonance', label: 'Resonance · Q', value: '2.0', min: 0, max: 20, step: 0.1, start: 2 },
+  { id: 'attack', label: 'Attack', value: '5 ms', min: 0.001, max: 2, step: 0.001, start: 0.005 },
+  { id: 'decay', label: 'Decay', value: '150 ms', min: 0.001, max: 2, step: 0.001, start: 0.15 },
+  { id: 'sustain', label: 'Sustain', value: '75%', min: 0, max: 1, step: 0.01, start: 0.75 },
+  { id: 'release', label: 'Release', value: '250 ms', min: 0.005, max: 3, step: 0.005, start: 0.25 },
+  { id: 'space', label: 'Space', value: '12%', min: 0, max: 1, step: 0.01, start: 0.12 },
+  { id: 'master', label: 'Volume', value: '80%', min: 0, max: 1, step: 0.01, start: 0.8 },
+];
+const waves = [['sine', 'Sine'], ['sawtooth', 'Saw'], ['square', 'Square'], ['triangle', 'Triangle']];
+const presets = [['saw', 'Bright saw'], ['pad', 'Warm pad'], ['pluck', 'Pluck'], ['bass', 'Bass']];
+const chain = [
+  ['1 · Oscillator', 'chain-osc', 'Sawtooth · oct 4'],
+  ['2 · Lowpass filter', 'chain-filter', 'Lowpass 8.0 kHz · Q 2.0'],
+  ['3 · Amp envelope', 'chain-env', 'A 5 ms · S 75% · R 250 ms'],
+  ['4 · Space', 'chain-space', 'Reverb 12%'],
+  ['5 · Output', 'chain-out', 'Your speakers'],
+];
+---
+
+<header class="top">
+  <div class="brand">
+    <h1 class="title">Subtractive <span>Synth</span></h1>
+    <p class="tag">Start with a raw electrical buzz, then carve it, shape it, and drop it into a room — live, in your browser, one key at a time.</p>
+  </div>
+</header>
+
+<ul class="metastrip">
+  <li><b>Web Audio</b> API, no samples</li>
+  <li><b>Subtractive</b> synthesis</li>
+  <li><b>Polyphonic</b> — hold a chord</li>
+  <li><b>0</b> audio libraries</li>
+</ul>
+
+<section class="lesson" aria-labelledby="intro-title">
+  <h2 id="intro-title">How a synth makes sound</h2>
+  <p>A synthesizer doesn't record sound — it <strong>builds</strong> it from scratch. A single oscillator produces a harsh, harmonic-rich buzz, and then everything downstream is about <em>taking things away</em> until what's left is a bell, a bass, a string, or a warm evening pad. That's subtractive synthesis, and it's the backbone of nearly every synth you've ever heard.</p>
+  <p>Below is a real one, wired up with the Web Audio API — oscillator, filter, envelope, and reverb, with a live oscilloscope and spectrum so you can <em>see</em> the sound the moment you make it. Play it with your computer keyboard, twist the knobs, and watch the picture change.</p>
+</section>
+
+<section class="stage synthpanel" aria-label="Subtractive synth" style="margin-top: clamp(16px, 2.4vw, 24px);">
+  <ol class="chain" aria-label="Signal chain">
+    {chain.map(([title, id, value]) => (
+      <li><div class="t">{title}</div><div class="v" id={id}>{value}</div></li>
+    ))}
+  </ol>
+
+  <div class="scopes">
+    <div class="scopebox">
+      <div class="scopelab"><span>Oscilloscope · waveform</span><span class="live">live</span></div>
+      <canvas id="scope" width="600" height="150" role="img" aria-label="Live oscilloscope"></canvas>
+    </div>
+    <div class="scopebox">
+      <div class="scopelab"><span>Spectrum · harmonics</span><span class="live">live</span></div>
+      <canvas id="spectrum" width="600" height="150" role="img" aria-label="Live frequency spectrum"></canvas>
+    </div>
+    <button class="enable" id="enable" type="button">
+      <span class="pill"><Icon name="sound" /><span class="kbd-hint">Click to enable sound</span><span class="touch-hint">Tap to enable sound</span></span>
+    </button>
+  </div>
+
+  <div class="synth-controls">
+    <div class="field">
+      <span class="field-label" id="waves-label">Waveform</span>
+      <div class="seg" id="waves" role="group" aria-labelledby="waves-label">
+        {waves.map(([wave, label]) => <button type="button" data-wave={wave} aria-pressed={wave === 'sawtooth' ? 'true' : 'false'}>{label}</button>)}
+      </div>
+    </div>
+    <div class="field">
+      <span class="field-label" id="presets-label">Presets</span>
+      <div class="seg" id="presets" role="group" aria-labelledby="presets-label">
+        {presets.map(([preset, label]) => <button type="button" data-preset={preset} aria-pressed={preset === 'saw' ? 'true' : 'false'}>{label}</button>)}
+      </div>
+    </div>
+    <button class="btn primary" id="sculpt" type="button"><Icon name="sparkle" /><span>Sculpt a pad</span></button>
+  </div>
+
+  <div class="sliders">
+    {sliders.map((s) => (
+      <div class="slider">
+        <div class="top"><label for={s.id}>{s.label}</label><span class="val" id={`${s.id}-val`}>{s.value}</span></div>
+        <input id={s.id} type="range" min={s.min} max={s.max} step={s.step} value={s.start} />
+      </div>
+    ))}
+  </div>
+
+  <div class="keyboard" role="group" aria-label="Playable keyboard"><div class="keyboard-keys" id="keyboard"></div></div>
+  <div class="kbfoot">
+    <p class="hint kbd-hint">Play with your keyboard — <b>a s d f g h j k</b> are the white keys, <b>w e t y u</b> the black ones. <b>z</b> / <b>x</b> shift octave. Or tap the keys.</p>
+    <p class="hint touch-hint">Tap the keys, or hold several for a chord. The octave buttons reach higher and lower notes.</p>
+    <div class="octctl">
+      <button class="btn" id="oct-down" type="button"><span aria-hidden="true">−</span> oct<span class="sr-only">ave down</span></button>
+      <span class="readout-oct">Octave <b id="oct-val">4</b></span>
+      <button class="btn" id="oct-up" type="button">oct<span class="sr-only">ave up</span> <span aria-hidden="true">+</span></button>
+    </div>
+  </div>
+  <noscript><p class="stage-foot">The synth needs JavaScript to make sound.</p></noscript>
+</section>
+
+<section class="lesson explain" id="explainer">
+  <h2>It starts with a shape</h2>
+  <p>Every note begins as an <strong>oscillator</strong> — a circuit that swings back and forth at some frequency. Play an A and it swings 440 times a second. But <em>how</em> it swings decides the timbre, and that's the first thing to try above: flip between the four waveforms while holding a key and watch the oscilloscope.</p>
+  <p>A <strong>sine</strong> is the purest possible tone — a single frequency, one clean curve, nothing else. It sounds soft and flute-like, almost boring. A <strong>sawtooth</strong> looks like a shark's fin and sounds bright and buzzy, because that ramp shape is secretly a whole stack of frequencies at once: the fundamental plus every harmonic above it, piled up. The <strong>square</strong> is hollow and reedy (odd harmonics only); the <strong>triangle</strong> sits in between, mellow but with a little edge. The spectrum <span class="scope-wide">on the right</span><span class="scope-narrow">under the oscilloscope</span> is the giveaway — the sine shows one lonely bar, the sawtooth shows a comb of them marching off toward the high end. <em>Bright</em> literally means <em>more harmonics</em>.</p>
+
+  <h2>Subtractive synthesis: carving with a filter</h2>
+  <p>So a sawtooth hands you far too much — a rich, harsh spray of harmonics. The trick of subtractive synthesis is to start with that surplus and <strong>take away</strong> what you don't want. The tool is a <strong>lowpass filter</strong>: it lets low frequencies pass through and progressively muffles everything above a chosen <strong>cutoff</strong> frequency.</p>
+  <p>Hold a bright sawtooth and slowly drag the <strong>Cutoff</strong> slider down. You'll hear the sound go from buzzy to warm to muffled, and on the spectrum you'll literally watch the tall forest of high harmonics get mowed down from the right — the dashed line marks where the filter starts cutting. That single knob is the most expressive control on the whole instrument. It's the "wah" in a wah pedal and the slow bloom at the start of a thousand dance tracks.</p>
+
+  <h2>Resonance: a spotlight at the cutoff</h2>
+  <p>Turn up <strong>Resonance</strong> and the filter stops being polite. Instead of a gentle roll-off, it boosts the frequencies right <em>at</em> the cutoff point, creating a sharp peak — you can see it as a little spike travelling along the spectrum as you sweep the cutoff. Crank it far enough and the filter nearly whistles on its own. Resonance is what gives acid basslines their squelch and vocal-ish synths their "ee"/"oo" vowels: you're emphasizing one narrow band and sweeping it around.</p>
+
+  <h2>ADSR: the shape of loudness over time</h2>
+  <p>A real note isn't just on or off. Pluck a string and it's loud instantly, then fades. Bow it and the sound swells in. That envelope of loudness over time has four stages — <strong>Attack</strong> (how fast it reaches full volume), <strong>Decay</strong> (how fast it drops to a holding level), <strong>Sustain</strong> (that holding level, for as long as you keep the key down), and <strong>Release</strong> (how long the tail rings out after you let go).</p>
+  <p>Short attack and zero sustain give you a percussive <strong>pluck</strong>. Long attack and long release give you a pad that breathes in and hangs in the air. Set Attack to its slowest and hold a chord — the notes fade in like a sunrise instead of stabbing at you. Nothing about the frequencies changed; only their <em>volume over time</em> did, and it completely transforms the feel.</p>
+
+  <h2>Reverb: putting it in a room</h2>
+  <p>The last stage answers a simple question: where is this sound happening? Dry, in a padded booth, or at the far end of a cathedral? The <strong>Space</strong> knob feeds the signal through a reverb — thousands of tiny reflections, generated here on the fly as a decaying burst of noise — so the note keeps ringing after it should have stopped. A touch adds depth; a lot turns even a short pluck into a slow, cavernous wash.</p>
+  <p>That's the whole chain: <strong>a shape, carved by a filter, shaped by an envelope, placed in a room.</strong> Every patch on every synth is some recipe of those four moves. Now go make a few of your own.</p>
+</section>
+
+<section class="card try">
+  <h2>Try this</h2>
+  <p class="prose-try">Hit <b>Sculpt a pad</b> and just watch: a bright, buzzy chord blooms open, the cutoff closes, reverb floods in, and every knob slides to its new home — a warm pad in a second and a half. Then hold your own chord and do it by hand: sawtooth, drop the cutoff, crank Attack and Release, add a little Space.</p>
+</section>
+
+<script>
+  import '../scripts/subtractive-synth.ts';
+</script>

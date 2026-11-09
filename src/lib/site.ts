@@ -6,7 +6,7 @@ export const SITE = {
   author: 'Moshe Malka',
   repo: 'https://github.com/moshejs/digital-instruments',
   description:
-    'Five real instruments, synthesized live in your browser: steelpan, theremin, kalimba, glass harp and lever harp. Fifteen songs with a follow-along guide.',
+    'Six instruments, synthesized live in your browser: steelpan, theremin, kalimba, glass harp, lever harp and synth. Fifteen songs with a follow-along guide.',
   locale: 'en_US',
   themeColor: '#121110',
 } as const;

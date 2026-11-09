@@ -1,0 +1,15 @@
+---
+import InstrumentPage from '../../layouts/InstrumentPage.astro';
+import SubtractiveSynth from '../../instruments/SubtractiveSynth.astro';
+import display from '@fontsource/big-shoulders-display/files/big-shoulders-display-latin-800-normal.woff2?url';
+import sans from '@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2?url';
+import sansBold from '@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2?url';
+---
+
+<InstrumentPage slug="subtractive-synth">
+  <!-- This page opens on running text, which would visibly reflow when the fonts swap in. -->
+  <Fragment slot="head">
+    {[display, sans, sansBold].map((href) => <link rel="preload" as="font" type="font/woff2" href={href} crossorigin />)}
+  </Fragment>
+  <SubtractiveSynth />
+</InstrumentPage>
