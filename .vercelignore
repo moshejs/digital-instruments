@@ -1,0 +1,9 @@
+# Not needed to build the site; never part of the deployment.
+# Paths are anchored: a bare "scripts" would also remove src/scripts.
+/README.md
+/LICENSE
+/.github
+/.editorconfig
+/tests
+/vitest.config.ts
+/scripts
