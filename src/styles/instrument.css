@@ -242,9 +242,10 @@ kbd { font-family: var(--font-mono); font-size: 12px; background: var(--panel-2)
 .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: var(--tap); }
 .row label, .row .label { font-size: 14px; color: var(--ink-dim); }
 .tempo-val { font-family: var(--font-mono); font-size: 13px; color: var(--accent-text); min-width: 64px; text-align: right; font-variant-numeric: tabular-nums; }
-input[type='range'] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 999px; background: var(--line-2); flex: 1; max-width: 170px; margin: 0; padding: 18px 0; background-clip: content-box; cursor: pointer; }
+input[type='range'] { -webkit-appearance: none; appearance: none; height: 36px; background: transparent; flex: 1; max-width: 170px; margin: 0; padding: 0; cursor: pointer; }
 input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); border: 3px solid var(--bg); margin-top: -8px; }
-input[type='range']::-webkit-slider-runnable-track { height: 4px; border-radius: 999px; }
+input[type='range']::-webkit-slider-runnable-track { height: 4px; border-radius: 999px; background: var(--line-2); }
+input[type='range']::-moz-range-track { height: 4px; border-radius: 999px; background: var(--line-2); }
 input[type='range']::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); border: 3px solid var(--bg); }
 
 .switch { position: relative; width: 44px; height: 26px; flex: 0 0 auto; }
@@ -270,6 +271,8 @@ input[type='range']::-moz-range-thumb { width: 18px; height: 18px; border-radius
 footer.foot { margin-top: 32px; color: var(--ink-dim); font-size: 13px; text-align: center; }
 footer.foot p { margin: 0 0 8px; }
 footer.foot b { color: var(--ink); font-weight: 500; }
+footer.foot .credit a, .foot-link { color: var(--ink-dim); text-underline-offset: 3px; }
+footer.foot .credit a:hover, footer.foot a.foot-link:hover { color: var(--accent-2); }
 .cat-nav { display: flex; justify-content: center; gap: 0 24px; flex-wrap: wrap; }
 .cat-nav a { display: inline-flex; align-items: center; min-height: var(--tap); color: var(--ink-dim); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 4px; }
 .cat-nav a:hover { color: var(--accent); text-decoration-color: var(--accent); }

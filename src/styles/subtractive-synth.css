@@ -94,11 +94,7 @@ h1.title span { color: var(--accent-2); }
 .slider .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .slider label { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); }
 .slider .val { font-family: var(--font-mono); font-size: 12px; color: var(--accent-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
-/* the shared range style's track collapses when the input is laid out as a block, so draw it here */
-.slider input[type='range'] {
-  display: block; width: 100%; max-width: none; height: 40px; padding: 0;
-  background: linear-gradient(var(--line-2), var(--line-2)) center / 100% 4px no-repeat;
-}
+.slider input[type='range'] { display: block; width: 100%; max-width: none; height: 40px; }
 
 /* keyboard */
 .keyboard {
@@ -141,7 +137,3 @@ h1.title span { color: var(--accent-2); }
 }
 .try .prose-try { margin: 8px 0 0; max-width: 68ch; line-height: 1.6; color: var(--ink-dim); }
 .try .prose-try b { color: var(--ink); font-weight: 600; }
-
-.foot-link { color: var(--ink-dim); text-underline-offset: 3px; }
-footer.foot a.foot-link:hover { color: var(--accent-2); }
-footer.foot .credit a { color: var(--ink-dim); text-underline-offset: 3px; }
