@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://moshejs.github.io/digital-instruments/sitemap-index.xml

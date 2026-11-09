@@ -38,7 +38,7 @@ Requires Node.js 22.12 or newer (`.nvmrc` pins 24).
 
 ```bash
 npm install
-npm run dev        # http://localhost:4321/digital-instruments/
+npm run dev        # http://localhost:4321/digital-instruments/ (BASE_PATH=/ serves it at the root)
 npm run check      # strict TypeScript + Astro diagnostics
 npm test           # Vitest unit tests
 npm run build      # static site in dist/

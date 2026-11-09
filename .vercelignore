@@ -1,0 +1,8 @@
+# Not needed to build the site; never part of the deployment.
+README.md
+LICENSE
+.github
+.editorconfig
+tests
+vitest.config.ts
+scripts
