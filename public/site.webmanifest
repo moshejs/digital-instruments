@@ -1,7 +1,7 @@
 {
   "name": "Moshe's Digital Instruments",
   "short_name": "Instruments",
-  "description": "Five instruments — steelpan, theremin, kalimba, glass harp and lever harp — synthesized live in your browser.",
+  "description": "Six instruments — steelpan, theremin, kalimba, glass harp, lever harp and subtractive synth — synthesized live in your browser.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -87,6 +87,17 @@
       "icons": [
         {
           "src": "favicon-harp.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Subtractive Synth",
+      "url": "subtractive-synth/",
+      "icons": [
+        {
+          "src": "favicon-subtractive-synth.svg",
           "sizes": "any",
           "type": "image/svg+xml"
         }

@@ -2,7 +2,7 @@
   "name": "digital-instruments",
   "version": "1.0.0",
   "private": true,
-  "description": "Moshe's Digital Instruments — a steelpan and a theremin, synthesized live in the browser with the Web Audio API.",
+  "description": "Moshe's Digital Instruments — six instruments, synthesized live in the browser with the Web Audio API.",
   "type": "module",
   "author": "Moshe Malka",
   "license": "MIT",

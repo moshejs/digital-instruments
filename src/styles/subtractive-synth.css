@@ -1,0 +1,147 @@
+/* SUBTRACTIVE SYNTH — a dark instrument panel. Violet = signal, cyan = the note to play. Single theme by design. */
+:root {
+  --bg: #0a0b0e;
+  --bg-2: #101218;
+  --panel: rgba(190, 200, 235, 0.035);
+  --panel-2: rgba(190, 200, 235, 0.075);
+  --line: rgba(190, 200, 235, 0.14);
+  --line-2: rgba(190, 200, 235, 0.26);
+  --ink: #eef0f4;
+  --ink-dim: #b7bdca;
+  --ink-faint: #8f97a8;
+  --accent: #c07cff;
+  --accent-2: #d7adff;
+  --accent-ink: #140a1f;
+  --guide: #7cc4ff;
+  --guide-2: #b0dcff;
+  --guide-ink: #06192b;
+  --page-bg:
+    radial-gradient(90% 60% at 20% -10%, rgba(192, 124, 255, 0.11), transparent 60%),
+    radial-gradient(70% 60% at 100% 0%, rgba(124, 196, 255, 0.06), transparent 60%),
+    #0a0b0e;
+}
+::selection { background: color-mix(in srgb, var(--accent) 40%, transparent); color: #fff; }
+
+h1.title span { color: var(--accent-2); }
+/* the same two lines whichever font is showing, so nothing below moves when the display font arrives */
+@media (max-width: 760px) { h1.title span { display: block; } }
+
+/* the source of the claims above the instrument */
+.metastrip {
+  display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 0 0 clamp(16px, 2.4vw, 24px); padding: 12px 0;
+  list-style: none; font-family: var(--font-mono); font-size: 13px; color: var(--ink-dim);
+  border-block: 1px solid var(--line);
+}
+.metastrip b { color: var(--ink); font-weight: 600; }
+
+/* ---------- the panel ---------- */
+.synthpanel { display: grid; gap: 20px; }
+
+.chain { display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; }
+.chain li { flex: 1 1 0; min-width: 116px; padding: 10px 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; position: relative; }
+.chain .t { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); }
+.chain .v { margin-top: 4px; font-size: 13px; line-height: 1.35; color: var(--ink); font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) { .chain li { flex: 1 1 44%; } }
+
+/* visualisers */
+.scopes { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.scopebox { padding: 8px 12px; background: #06070c; border: 1px solid var(--line); border-radius: 12px; min-width: 0; }
+.scopelab { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); }
+.scopelab .live { display: inline-flex; align-items: center; gap: 6px; color: var(--accent-2); }
+.scopelab .live::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+.scopes canvas { display: block; width: 100%; height: 150px; }
+@media (max-width: 720px) {
+  .scopes { grid-template-columns: minmax(0, 1fr); }
+  .scopes canvas { height: 128px; }
+}
+
+/* the sound-on overlay, above both scopes */
+.enable {
+  position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; width: 100%; padding: 0;
+  cursor: pointer; border: 0; border-radius: 12px; color: var(--ink); font: inherit;
+  background: color-mix(in srgb, var(--bg) 58%, transparent); backdrop-filter: blur(2px);
+}
+.enable .pill {
+  display: inline-flex; align-items: center; gap: 8px; min-height: var(--tap); padding: 0 18px;
+  font-family: var(--font-mono); font-size: 13px;
+  background: var(--bg-2); border: 1px solid var(--accent); border-radius: 999px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+  animation: enable-pulse 1.9s ease-in-out infinite;
+}
+@keyframes enable-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent); }
+  50% { box-shadow: 0 0 0 9px color-mix(in srgb, var(--accent) 4%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) { .enable .pill { animation: none; } }
+
+/* waveform, presets, sculpt */
+.synth-controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+.synth-controls .field { display: grid; gap: 6px; min-width: 0; }
+.field-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); }
+.synth-controls .seg button { min-height: var(--tap); }
+.synth-controls #sculpt { margin-left: auto; }
+@media (max-width: 520px) {
+  .synth-controls .field, .synth-controls .seg { width: 100%; }
+  .synth-controls .seg { display: flex; }
+  .synth-controls .seg button { flex: 1 1 auto; padding: 0 4px; font-size: 12px; }
+  .synth-controls #sculpt { margin-left: 0; width: 100%; }
+}
+
+/* sliders */
+.sliders { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px 24px; }
+@media (max-width: 860px) { .sliders { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; } }
+.slider { min-width: 0; }
+.slider .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.slider label { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); }
+.slider .val { font-family: var(--font-mono); font-size: 12px; color: var(--accent-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* the shared range style's track collapses when the input is laid out as a block, so draw it here */
+.slider input[type='range'] {
+  display: block; width: 100%; max-width: none; height: 40px; padding: 0;
+  background: linear-gradient(var(--line-2), var(--line-2)) center / 100% 4px no-repeat;
+}
+
+/* keyboard */
+.keyboard {
+  position: relative; height: 168px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px;
+  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+}
+/* keys are placed in percent of this inner box, so the frame's padding stays even */
+.keyboard-keys { position: absolute; inset: 8px; }
+@media (max-width: 720px) { .keyboard { height: 148px; } }
+.key {
+  position: absolute; top: 0; display: flex; align-items: flex-end; justify-content: center; padding: 0;
+  cursor: pointer; font: inherit; border-top: 0; touch-action: none; -webkit-tap-highlight-color: transparent;
+  transition: background 0.05s ease, box-shadow 0.05s ease;
+}
+.key.white { height: 100%; color: #565c6b; background: linear-gradient(180deg, #f6f7fb, #e7eaf1); border: 1px solid #c3c9d6; border-top: 0; border-radius: 0 0 7px 7px; z-index: 1; }
+.key.black { height: 62%; color: #c4cbd8; background: linear-gradient(180deg, #2b303c, #10131b); border: 1px solid #05070c; border-top: 0; border-radius: 0 0 6px 6px; z-index: 2; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.55); }
+.key .lab { font-family: var(--font-mono); font-size: 11px; padding-bottom: 8px; pointer-events: none; }
+.key.black .lab { font-size: 10px; padding-bottom: 6px; }
+.key.on { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 55%, transparent); }
+.key:focus-visible { z-index: 3; outline-offset: -2px; }
+
+.kbfoot { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; justify-content: space-between; }
+.kbfoot .hint { flex: 1 1 260px; margin: 0; font-size: 13px; line-height: 1.5; color: var(--ink-dim); }
+.kbfoot .hint b { color: var(--ink); font-weight: 600; }
+.octctl { display: inline-flex; align-items: center; gap: 8px; }
+.octctl .readout-oct { font-family: var(--font-mono); font-size: 13px; color: var(--ink-dim); white-space: nowrap; }
+.octctl b { color: var(--accent-2); font-weight: 600; }
+
+/* ---------- the explainer ---------- */
+.explain { margin-top: clamp(24px, 3vw, 32px); }
+.explain + .explain, .try { margin-top: 16px; }
+.lesson p + h2 { margin-top: 14px; }
+.lesson em { font-style: italic; }
+.lesson strong { font-weight: 600; }
+/* "on the right" is only true where the scopes sit side by side */
+.scope-narrow { display: none; }
+@media (max-width: 720px) {
+  .scope-wide { display: none; }
+  .scope-narrow { display: inline; }
+}
+.try .prose-try { margin: 8px 0 0; max-width: 68ch; line-height: 1.6; color: var(--ink-dim); }
+.try .prose-try b { color: var(--ink); font-weight: 600; }
+
+.foot-link { color: var(--ink-dim); text-underline-offset: 3px; }
+footer.foot a.foot-link:hover { color: var(--accent-2); }
+footer.foot .credit a { color: var(--ink-dim); text-underline-offset: 3px; }

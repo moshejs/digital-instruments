@@ -150,8 +150,8 @@ const ogHome = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630
   <text x="64" y="312" font-family="${DISPLAY}" font-weight="800" font-size="124" fill="#edeae3">DIGITAL</text>
   <text x="64" y="424" font-family="${DISPLAY}" font-weight="800" font-size="124" fill="#edeae3">INSTRUMENTS</text>
   <rect x="72" y="452" width="640" height="5" rx="2.5" fill="url(#sig)"/>
-  <text x="72" y="506" font-family="${SANS}" font-size="26" fill="#a8a39a">Five instruments, synthesized live in your browser.</text>
-  <text x="72" y="552" font-family="${MONO}" font-size="17" letter-spacing="3"><tspan fill="#f6b23c">STEELPAN</tspan><tspan fill="#6e6a63"> · </tspan><tspan fill="#5cf2d6">THEREMIN</tspan><tspan fill="#6e6a63"> · </tspan><tspan fill="#ff8a4c">KALIMBA</tspan><tspan fill="#6e6a63"> · </tspan><tspan fill="#b8a6ff">GLASS HARP</tspan><tspan fill="#6e6a63"> · </tspan><tspan fill="#f3cf86">HARP</tspan></text>
+  <text x="72" y="506" font-family="${SANS}" font-size="26" fill="#a8a39a">Six instruments, synthesized live in your browser.</text>
+  <text x="72" y="552" font-family="${MONO}" font-size="17" letter-spacing="3"><tspan fill="#f6b23c">STEELPAN</tspan><tspan fill="#6e6a63"> · </tspan><tspan fill="#5cf2d6">THEREMIN</tspan><tspan fill="#6e6a63"> · </tspan><tspan fill="#ff8a4c">KALIMBA</tspan><tspan fill="#6e6a63"> · </tspan><tspan fill="#b8a6ff">GLASS HARP</tspan><tspan fill="#6e6a63"> · </tspan><tspan fill="#f3cf86">HARP</tspan><tspan fill="#6e6a63"> · </tspan><tspan fill="#c07cff">SYNTH</tspan></text>
   <text x="72" y="596" font-family="${MONO}" font-size="18" fill="#6e6a63">moshejs.github.io/digital-instruments</text>
   <rect x="840" y="80" width="300" height="200" rx="6" fill="#07070d" stroke="rgba(237,234,227,.14)"/>
   <g clip-path="url(#screen)">${waveSvg(855, 1125, 180, 62, 4.2, 'h', 3)}</g>
@@ -315,6 +315,42 @@ const ogHarp = card(
   ${footer('#f3cf86')}`,
 );
 
+const synthIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#0a0b0e"/>
+  <path d="M8 34 L22 14 V34 L36 14 V34 L50 14 V34" fill="none" stroke="#c07cff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  ${[0, 1, 2, 3, 4].map((k) => `<rect x="${9 + k * 9.4}" y="41" width="8" height="15" rx="1.5" fill="#eef0f4"/>`).join('')}
+</svg>`;
+
+/** A sawtooth's trace: one ramp after another. */
+const sawPath = (x0, x1, cy, amp, teeth) => {
+  const step = (x1 - x0) / teeth;
+  let d = `M${x0} ${cy + amp}`;
+  for (let i = 0; i < teeth; i++) d += ` L${x0 + step * (i + 1)} ${cy - amp} V${cy + amp}`;
+  return d;
+};
+
+const ogSynth = card(
+  `<defs><radialGradient id="bg" cx="72%" cy="10%" r="80%"><stop offset="0" stop-color="#2a1a44"/><stop offset=".6" stop-color="#11121c"/><stop offset="1" stop-color="#0a0b0e"/></radialGradient>
+  <filter id="glow" x="-10%" y="-40%" width="120%" height="180%"><feGaussianBlur stdDeviation="8"/></filter></defs><rect width="1200" height="630" fill="url(#bg)"/>`,
+  `<rect x="660" y="70" width="480" height="150" rx="12" fill="#06070c" stroke="rgba(255,255,255,.14)"/>
+  <path d="${sawPath(684, 1116, 145, 48, 6)}" fill="none" stroke="#c07cff" stroke-width="9" opacity=".5" filter="url(#glow)"/>
+  <path d="${sawPath(684, 1116, 145, 48, 6)}" fill="none" stroke="#d7adff" stroke-width="4" stroke-linejoin="round"/>
+  <rect x="660" y="236" width="480" height="150" rx="12" fill="#06070c" stroke="rgba(255,255,255,.14)"/>
+  ${Array.from({ length: 28 }, (_, i) => {
+    const h = (118 / Math.sqrt(i + 1)) * (i > 15 ? Math.pow(0.72, i - 15) : 1);
+    return `<rect x="${680 + i * 16}" y="${374 - h}" width="11" height="${h}" fill="#c07cff"/>`;
+  }).join('')}
+  <line x1="940" x2="940" y1="248" y2="376" stroke="#d7adff" stroke-width="2.5" stroke-dasharray="7 7"/>
+  ${Array.from({ length: 11 }, (_, i) => `<rect x="${660 + i * 43.8}" y="404" width="41" height="150" rx="4" fill="${[0, 2, 4].includes(i) ? '#c07cff' : '#eef0f4'}"/>`).join('')}
+  ${[0, 1, 3, 4, 5, 7, 8].map((i) => `<rect x="${660 + (i + 1) * 43.8 - 15}" y="404" width="28" height="92" rx="3" fill="#161922"/>`).join('')}
+  <text x="72" y="118" font-family="${MONO}" font-size="22" fill="#c07cff" letter-spacing="6">NO. 06 · SOUND SYNTHESIS</text>
+  <text x="66" y="240" font-family="${DISPLAY}" font-weight="800" font-size="96" fill="#eef0f4" letter-spacing="1">SUBTRACTIVE</text>
+  <text x="66" y="370" font-family="${DISPLAY}" font-weight="800" font-size="150" fill="#d7adff" letter-spacing="2">SYNTH</text>
+  <text x="72" y="432" font-family="${SANS}" font-size="27" fill="#b7bdca">How a synth makes sound —</text>
+  <text x="72" y="468" font-family="${SANS}" font-size="27" fill="#b7bdca">carve a buzz, and watch it change.</text>
+  ${footer('#c07cff')}`,
+);
+
 /* ───────── ICO wrapper (a PNG inside a one-entry .ico) ───────── */
 
 function pngToIco(png, size) {
@@ -345,6 +381,7 @@ const files = {
   'favicon-kalimba.svg': kalimbaIcon,
   'favicon-glass-harp.svg': glassIcon,
   'favicon-harp.svg': harpIcon,
+  'favicon-subtractive-synth.svg': synthIcon,
 };
 for (const [name, svg] of Object.entries(files)) await writeFile(new URL(name, OUT), svg.replace(/\n\s*/g, ' ').trim());
 
@@ -360,6 +397,7 @@ await writeFile(new URL('og/theremin.png', OUT), await png(ogTheremin, 1200, 630
 await writeFile(new URL('og/kalimba.png', OUT), await png(ogKalimba, 1200, 630));
 await writeFile(new URL('og/glass-harp.png', OUT), await png(ogGlass, 1200, 630));
 await writeFile(new URL('og/harp.png', OUT), await png(ogHarp, 1200, 630));
+await writeFile(new URL('og/subtractive-synth.png', OUT), await png(ogSynth, 1200, 630));
 
 console.log('Wrote favicons, app icons and Open Graph cards to /public');
 

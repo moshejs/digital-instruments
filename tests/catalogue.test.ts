@@ -12,8 +12,8 @@ import {
 const melody = (id: string) => findSong(id)!.notes.filter((n) => n.note !== REST).map((n) => n.note);
 
 describe('catalogue', () => {
-  it('lists five instruments with unique slugs and catalogue numbers in order', () => {
-    expect(INSTRUMENTS.map((i) => i.slug)).toEqual(['steelpan', 'theremin', 'kalimba', 'glass-harp', 'harp']);
+  it('lists six instruments with unique slugs and catalogue numbers in order', () => {
+    expect(INSTRUMENTS.map((i) => i.slug)).toEqual(['steelpan', 'theremin', 'kalimba', 'glass-harp', 'harp', 'subtractive-synth']);
     INSTRUMENTS.forEach((inst, i) => expect(inst.catalogNo).toBe(`No. 0${i + 1}`));
   });
 });

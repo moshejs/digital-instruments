@@ -2,6 +2,7 @@
 import { INSTRUMENTS, type Instrument } from '../data/instruments';
 import { SONG_REQUEST_URL, withBase } from '../lib/site';
 import { songPath, songsFor } from '../data/song-pages';
+import { hasSongs } from '../data/availability';
 
 interface Props {
   slug: Instrument['slug'];
@@ -14,7 +15,7 @@ const current = Astro.url.pathname;
 ---
 
 <footer class="foot">
-  <nav class="song-nav" aria-labelledby="song-nav-title">
+  {hasSongs(here.slug) && <nav class="song-nav" aria-labelledby="song-nav-title">
     <h2 id="song-nav-title">Learn a song on the {here.name.toLowerCase()}</h2>
     <ul>
       {songsFor(here.slug).map((song) => {
@@ -23,7 +24,7 @@ const current = Astro.url.pathname;
       })}
     </ul>
     <p class="suggest">Missing a song? <a href={SONG_REQUEST_URL} rel="noopener">Suggest one on GitHub</a></p>
-  </nav>
+  </nav>}
   <p><slot /></p>
   <nav class="cat-nav" aria-label="More instruments">
     <a href={withBase(`${prev.slug}/`)}>← {prev.catalogNo} {prev.name}</a>
