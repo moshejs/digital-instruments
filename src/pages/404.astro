@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import { SITE, withBase } from '../lib/site';
+import { SITE, studioUrl, withBase } from '../lib/site';
 import { INSTRUMENTS } from '../data/instruments';
 ---
 
@@ -18,7 +18,7 @@ import { INSTRUMENTS } from '../data/instruments';
       {INSTRUMENTS.map((i) => <li><a href={withBase(`${i.slug}/`)} style={`--hover:${i.accent}`}>{i.name}</a></li>)}
       <li><a href={withBase()}>All instruments</a></li>
     </ul>
-    <p class="credit">Built by <a href="https://www.quentin.software/">Quentin.Code</a></p>
+    <p class="credit">Built by Moshe Malka at <a href={studioUrl('digital-instruments')}>Quentin.Code</a> · <a href={studioUrl('digital-instruments', '#contact')}>Work with me</a></p>
   </main>
 </Base>
 

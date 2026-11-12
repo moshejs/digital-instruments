@@ -10,7 +10,7 @@ import { buildGlasses } from '../lib/glass-layout';
 import { HARP_STRINGS, leverPreset, pitchOf, stringGeometry } from '../lib/harp';
 import { REST, midiToName } from '../lib/music';
 import { WIDE_KEYS, keyMidi, layoutKeys } from '../lib/synth';
-import { SITE, SONG_REQUEST_URL, withBase } from '../lib/site';
+import { SITE, SONG_REQUEST_URL, studioUrl, withBase } from '../lib/site';
 
 const home = new URL(withBase(), Astro.site).href;
 const songInstruments = INSTRUMENTS.filter((i) => hasSongs(i.slug));
@@ -198,7 +198,7 @@ const jsonLd = [
     <span>© {new Date().getFullYear()} {SITE.author}</span>
     <span>Built with Astro and the Web Audio API · MIT licensed</span>
     <a href={SITE.repo} rel="noopener">Source on GitHub</a>
-    <a href="https://www.quentin.software/">Built by Quentin.Code</a>
+    <span>Built by Moshe Malka at <a href={studioUrl('digital-instruments')}>Quentin.Code</a> · <a href={studioUrl('digital-instruments', '#contact')}>Work with me</a></span>
   </footer>
 </Base>
 
