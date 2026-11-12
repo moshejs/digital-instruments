@@ -1,6 +1,6 @@
 ---
 import { INSTRUMENTS, type Instrument } from '../data/instruments';
-import { SONG_REQUEST_URL, withBase } from '../lib/site';
+import { SONG_REQUEST_URL, studioUrl, withBase } from '../lib/site';
 import { songPath, songsFor } from '../data/song-pages';
 import { hasSongs } from '../data/availability';
 
@@ -12,6 +12,7 @@ const prev = INSTRUMENTS[(i - 1 + INSTRUMENTS.length) % INSTRUMENTS.length];
 const next = INSTRUMENTS[(i + 1) % INSTRUMENTS.length];
 const here = INSTRUMENTS[i];
 const current = Astro.url.pathname;
+const creditSlug = here.slug === 'subtractive-synth' ? 'subtractive-synth' : 'digital-instruments';
 ---
 
 <footer class="foot">
@@ -31,5 +32,5 @@ const current = Astro.url.pathname;
     <a href={withBase()}>All instruments</a>
     <a href={withBase(`${next.slug}/`)}>{next.catalogNo} {next.name} →</a>
   </nav>
-  <p class="credit">Built by <a href="https://www.quentin.software/">Quentin.Code</a></p>
+  <p class="credit">Built by Moshe Malka at <a href={studioUrl(creditSlug)}>Quentin.Code</a> · <a href={studioUrl(creditSlug, '#contact')}>Work with me</a></p>
 </footer>

@@ -24,6 +24,13 @@ export const SERVICES: { goatcounter: string; googleVerification: string; bingVe
   bingVerification: '',
 };
 
+/**
+ * The studio credit's links, tagged with the project they came from. The synth
+ * page keeps its own slug ("subtractive-synth"): it started as its own project.
+ */
+export const studioUrl = (slug: string, hash = ''): string =>
+  `https://www.quentin.software/?utm_source=${encodeURIComponent(slug)}&utm_medium=studio-credit${hash}`;
+
 /** Opens a pre-filled GitHub issue for a song request. */
 export const SONG_REQUEST_URL = `${SITE.repo}/issues/new?template=song-request.yml`;
 
