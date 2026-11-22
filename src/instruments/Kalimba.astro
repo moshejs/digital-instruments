@@ -3,6 +3,7 @@
 import CoachBand from '../components/CoachBand.astro';
 import SongLibrary from '../components/SongLibrary.astro';
 import SettingsCard from '../components/SettingsCard.astro';
+import Recorder from '../components/Recorder.astro';
 import '../styles/instrument.css';
 import '../styles/kalimba.css';
 import type { Song } from '../data/songs';
@@ -45,6 +46,7 @@ const { song } = Astro.props;
 
   <div class="rail">
     <CoachBand idle="Pick a song to practise, or just pluck the tines. Songs with sharps or flats need a chromatic kalimba." />
+    <Recorder />
     <SongLibrary />
     <SettingsCard>
       <div class="row">

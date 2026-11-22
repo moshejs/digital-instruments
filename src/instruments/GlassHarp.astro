@@ -3,6 +3,7 @@
 import CoachBand from '../components/CoachBand.astro';
 import SongLibrary from '../components/SongLibrary.astro';
 import SettingsCard from '../components/SettingsCard.astro';
+import Recorder from '../components/Recorder.astro';
 import '../styles/instrument.css';
 import '../styles/glass-harp.css';
 import type { Song } from '../data/songs';
@@ -43,13 +44,16 @@ const { song } = Astro.props;
 
   <div class="lower">
     <SongLibrary />
-    <SettingsCard>
-      <div class="row">
-        <label for="swNames">Note names under glasses</label>
-        <span class="switch"><input type="checkbox" id="swNames" checked /><span class="track"></span><span class="knob"></span></span>
-      </div>
-      <Fragment slot="legend"><span><i class="a"></i>singing</span><span><i class="t"></i>play this next</span></Fragment>
-    </SettingsCard>
+    <div class="lower-side">
+      <Recorder note="General MIDI has no glass harp, so the file carries no instrument sound: pick a sustained one in your MIDI app." />
+      <SettingsCard>
+        <div class="row">
+          <label for="swNames">Note names under glasses</label>
+          <span class="switch"><input type="checkbox" id="swNames" checked /><span class="track"></span><span class="knob"></span></span>
+        </div>
+        <Fragment slot="legend"><span><i class="a"></i>singing</span><span><i class="t"></i>play this next</span></Fragment>
+      </SettingsCard>
+    </div>
   </div>
 </div>
 

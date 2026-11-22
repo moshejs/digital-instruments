@@ -3,13 +3,16 @@
  * Tuned octave + twelfth ring over a bright, fast-decaying metallic "ping",
  * with a filtered-noise strike transient and a touch of plate shimmer.
  */
-import { REST, flatName, noteToFreq } from '../lib/music';
+import { REST, flatName, midiToFreq, midiToName, noteToFreq, noteToMidi } from '../lib/music';
+import { GM } from '../lib/midi';
 import { createAudioContext, makeImpulse, makeNoise } from '../lib/audio';
 import { buildPads } from '../lib/steelpan-layout';
 import { PIANO_KEYMAP, invertKeymap } from '../lib/keyboard';
 import type { Song } from '../data/songs';
 import { $, $as, showLast, spoken } from './shared/song-ui';
 import { mountGuide, type GuidePlayer } from './shared/guide-player';
+import { mountRecorder } from './shared/recorder-ui';
+import type { TakeRecorder } from '../lib/take';
 
 /* ───────────────────────────── sound ───────────────────────────── */
 
@@ -26,6 +29,9 @@ const PARTIALS: Overtone[] = [
 ];
 const ATTACK = 0.005;
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+const ringScale = (freq: number) => clamp(Math.pow(330 / freq, 0.35), 0.6, 1.4); // high notes ring shorter
+/** How long a struck note rings: its fundamental's decay. A recorded take uses it as the note's length. */
+const ringMs = (freq: number) => 1000 * PARTIALS[0].decay * ringScale(freq);
 
 class PanSynth {
   private ctx: AudioContext | null = null;
@@ -90,7 +96,6 @@ class PanSynth {
     const ctx = this.init();
     if (ctx.state === 'suspended') void ctx.resume();
     const t0 = ctx.currentTime;
-    const ringScale = clamp(Math.pow(330 / freq, 0.35), 0.6, 1.4); // high notes ring shorter
 
     const voice = ctx.createGain();
     voice.connect(this.dry);
@@ -106,7 +111,7 @@ class PanSynth {
       osc.frequency.setValueAtTime(f * 1.01, t0); // tiny pitch drop on the strike
       osc.frequency.exponentialRampToValueAtTime(f, t0 + 0.05);
       const g = ctx.createGain();
-      const decay = p.decay * ringScale;
+      const decay = p.decay * ringScale(freq);
       g.gain.setValueAtTime(0.0001, t0);
       g.gain.linearRampToValueAtTime(Math.max(0.0002, p.gain * velocity * 0.34), t0 + ATTACK);
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + decay);
@@ -154,6 +159,7 @@ const padEls = new Map<string, HTMLButtonElement>();
 const flashTimers = new Map<string, number>();
 let panGlowTimer = 0;
 let player: GuidePlayer;
+let recorder: TakeRecorder;
 
 function renderPan(): void {
   const host = $('pads');
@@ -211,6 +217,7 @@ function flashPad(note: string, cls = 'struck'): void {
 /** The player strikes a pad (mouse, touch or keyboard). */
 function hitPad(note: string): void {
   synth.strike(noteToFreq(note), 1);
+  recorder.noteOn(noteToMidi(note), 1, ringMs(noteToFreq(note)));
   flashPad(note);
   showLast(flatName(note));
   player.checkHit(note);
@@ -262,6 +269,20 @@ function initKeyboard(): void {
 
 function init(): void {
   renderPan();
+  recorder = mountRecorder({
+    slug: 'steelpan',
+    name: 'Steelpan',
+    program: GM.steelDrums,
+    prepare: () => synth.unlock(),
+    play: (e) => {
+      if (e.kind !== 'on') return; // a struck pan rings out on its own
+      synth.strike(midiToFreq(e.note), e.velocity);
+      const note = midiToName(e.note);
+      flashPad(note);
+      showLast(flatName(note));
+    },
+    silence: () => {},
+  });
   player = mountGuide(
     'steelpan',
     {

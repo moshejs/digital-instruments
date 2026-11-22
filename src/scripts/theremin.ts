@@ -3,7 +3,7 @@
  * Pointer (or phone tilt) → pitch and volume, with portamento glide,
  * a vibrato LFO, a timbre crossfade and an oscilloscope of the real output.
  */
-import { REST, centsBetween, freqInfo, midiToFreq, noteToFreq, snapFreq, type ScaleMode } from '../lib/music';
+import { REST, centsBetween, freqInfo, freqToMidiFloat, midiToFreq, noteToFreq, snapFreq, type ScaleMode } from '../lib/music';
 import { createAudioContext, makeImpulse } from '../lib/audio';
 import { track } from '../lib/analytics';
 import { FIELD_MAX_MIDI, FIELD_MIN_MIDI, freqToX, tiltToControl, xToFreq, yToVolume } from '../lib/theremin-field';
@@ -12,6 +12,8 @@ import {
   $, $as, NoteStrip, announce, b, capture, enterPractice, revealInstrument, initLibraryToggle, isOperatingControl, markActive,
   renderSongList, setFeedback, setProgressBar, setSongInUrl, songIdFromUrl,
 } from './shared/song-ui';
+import { mountRecorder } from './shared/recorder-ui';
+import type { TakeEvent, TakeRecorder } from '../lib/take';
 
 /* ───────────────────────────── sound ───────────────────────────── */
 
@@ -177,6 +179,44 @@ const hzTop = $('hzTop');
 const noteTop = $('noteTop');
 
 const user = { playing: false, freq: 0, vol: 0 };
+
+/*
+ * Recording: a theremin glides, so a take is one held MIDI note in the middle of
+ * the field (F♯4) bent up or down by up to 18 semitones, which covers C3–C6
+ * exactly, with the volume hand as expression (CC 11). The file sets that bend
+ * range itself (RPN 0), so a MIDI player bends to the pitches you played.
+ */
+const TAKE_NOTE = (FIELD_MIN_MIDI + FIELD_MAX_MIDI) / 2;
+const TAKE_BEND_RANGE = (FIELD_MAX_MIDI - FIELD_MIN_MIDI) / 2;
+let recorder: TakeRecorder;
+
+function recordHand(): void {
+  if (!recorder?.recording) return;
+  if (user.playing) {
+    recorder.bend(freqToMidiFloat(user.freq) - TAKE_NOTE);
+    recorder.expression(user.vol);
+    if (!recorder.holding(TAKE_NOTE)) recorder.noteOn(TAKE_NOTE, 100 / 127);
+  } else recorder.noteOff(TAKE_NOTE);
+}
+
+/* playing a take back moves the hand the way it was recorded */
+const takeHand = { sounding: false, freq: midiToFreq(TAKE_NOTE), vol: 0 };
+
+function playTakeEvent(e: TakeEvent): void {
+  if (e.kind === 'bend') {
+    takeHand.freq = midiToFreq(TAKE_NOTE + e.semitones);
+    synth.setPitch(takeHand.freq);
+  } else if (e.kind === 'expression') {
+    takeHand.vol = e.value;
+  } else takeHand.sounding = e.kind === 'on';
+  if (takeHand.sounding) {
+    synth.setVolume(takeHand.vol);
+    showHand(freqToX(takeHand.freq), takeHand.vol, takeHand.freq);
+  } else {
+    synth.setVolume(0, 0.06);
+    resetHand();
+  }
+}
 let powered = false;
 let scaleMode: ScaleMode = 'off';
 
@@ -278,6 +318,7 @@ function play(fx: number, vol: number, label?: string): void {
   synth.setPitch(freq);
   synth.setVolume(vol);
   showHand(fx, vol, freq, label);
+  recordHand();
 }
 
 function release(): void {
@@ -285,6 +326,7 @@ function release(): void {
   user.vol = 0;
   if (player.mode !== 'listen') synth.setVolume(0, 0.06);
   resetHand();
+  recordHand();
 }
 
 function onPointer(e: PointerEvent): void {
@@ -742,6 +784,18 @@ function init(): void {
   sizeScope();
   requestAnimationFrame(drawScope);
   initField();
+  recorder = mountRecorder({
+    slug: 'theremin',
+    name: 'Theremin',
+    bendRange: TAKE_BEND_RANGE,
+    prepare: powerOn,
+    play: playTakeEvent,
+    silence: () => {
+      takeHand.sounding = false;
+      synth.setVolume(0, 0.06);
+      resetHand();
+    },
+  });
 
   $('power').addEventListener('click', powerOn);
 

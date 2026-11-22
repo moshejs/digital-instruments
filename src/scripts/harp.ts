@@ -14,10 +14,17 @@ import {
 import type { Song } from '../data/songs';
 import { $, announce, capture, showLast } from './shared/song-ui';
 import { mountGuide, type GuidePlayer } from './shared/guide-player';
+import { mountRecorder } from './shared/recorder-ui';
+import { GM } from '../lib/midi';
+import type { TakeRecorder } from '../lib/take';
 
 /* ───────────────────────────── sound ───────────────────────────── */
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+/** Length of a string's rendered pluck; low strings ring longer. */
+const stringSeconds = (freq: number) => clamp(4.2 * Math.pow(262 / freq, 0.5), 1.6, 5);
+/** How long a pluck rings, to its 60 dB decay point. A recorded take uses it as the note's length. */
+const ringMs = (midi: number) => 1000 * stringSeconds(midiToFreq(midi)) * 0.8;
 
 class HarpSynth {
   private ctx: AudioContext | null = null;
@@ -67,7 +74,7 @@ class HarpSynth {
     const period = Math.max(8, Math.floor(sr / freq));
     // the two-point average adds half a sample of delay
     const actual = sr / (period + 0.5);
-    const seconds = clamp(4.2 * Math.pow(262 / freq, 0.5), 1.6, 5);
+    const seconds = stringSeconds(freq);
     const buffer = ctx.createBuffer(1, Math.floor(sr * seconds), sr);
     const d = buffer.getChannelData(0);
 
@@ -125,6 +132,7 @@ const svgEl = <K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<strin
 let levers: Levers = [...C_MAJOR_LEVERS];
 let autoLevers = true;
 let player: GuidePlayer;
+let recorder: TakeRecorder;
 
 interface StringView {
   path: SVGPathElement;
@@ -274,6 +282,7 @@ function sound(i: number, velocity: number): string {
 /** The player plucks a string. */
 function pluck(i: number, velocity = 1): void {
   synth.unlock();
+  recorder.noteOn(pitchOf(i, levers[i]), velocity, ringMs(pitchOf(i, levers[i])));
   player.checkHit(sound(i, velocity));
 }
 
@@ -345,6 +354,23 @@ function initKeyboard(): void {
 
 function init(): void {
   const svg = renderHarp();
+  recorder = mountRecorder({
+    slug: 'harp',
+    name: 'Lever harp',
+    program: GM.orchestralHarp,
+    prepare: () => synth.unlock(),
+    play: (e) => {
+      if (e.kind !== 'on') return; // a plucked string rings out on its own
+      // the string that sounds this pitch with the levers as they are now; otherwise just the sound
+      const i = views.findIndex((_, k) => pitchOf(k, levers[k]) === e.note);
+      if (i >= 0) sound(i, e.velocity);
+      else {
+        synth.pluck(e.note, e.velocity);
+        showLast(midiToName(e.note));
+      }
+    },
+    silence: () => {},
+  });
   setAllLevers(levers);
   initPlaying(svg);
   initKeyboard();

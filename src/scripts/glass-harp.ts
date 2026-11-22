@@ -6,12 +6,14 @@
  * detuned twin for the shimmering beat, and band-passed friction noise.
  * Tapping without rubbing gives the bright "ting" of a struck glass.
  */
-import { noteToFreq } from '../lib/music';
+import { midiToFreq, midiToName, noteToFreq, noteToMidi } from '../lib/music';
 import { createAudioContext, makeImpulse, makeNoise } from '../lib/audio';
 import { buildGlasses } from '../lib/glass-layout';
 import { PIANO_KEYMAP, invertKeymap } from '../lib/keyboard';
 import { $, capture, showLast } from './shared/song-ui';
 import { mountGuide, type GuidePlayer } from './shared/guide-player';
+import { mountRecorder } from './shared/recorder-ui';
+import type { TakeRecorder } from '../lib/take';
 
 /* ───────────────────────────── sound ───────────────────────────── */
 
@@ -140,6 +142,7 @@ class GlassVoice {
 const glassEls = new Map<string, HTMLButtonElement>();
 const singing = new Map<string, number>(); // note → active voice count (for the glow)
 let player: GuidePlayer;
+let recorder: TakeRecorder;
 
 interface Rub {
   note: string;
@@ -215,6 +218,7 @@ function startRub(id: number, note: string, x: number, y: number): void {
   engine.ting(noteToFreq(note), 0.5); // the first touch taps the glass
   const rub: Rub = { note, voice: new GlassVoice(noteToFreq(note)), x, y, t: performance.now(), moved: 0, level: 0, sungMs: 0, counted: false, slowMs: 0, hinted: false };
   rubs.set(id, rub);
+  recorder.noteOn(noteToMidi(note), 0.5); // the touch's ting; the glass then sings until the finger lifts
   setSinging(note, +1, 0);
   showLast(note.replace('#', '♯'));
 }
@@ -256,6 +260,7 @@ function endRub(id: number): void {
   if (!rub) return;
   rubs.delete(id);
   rub.voice.release();
+  recorder.noteOff(noteToMidi(rub.note));
   setSinging(rub.note, -1, 0);
   if (!rub.counted && !rub.hinted && rub.sungMs === 0 && isGuidingOn(rub.note)) {
     player.feedback('info', 'Tapping gives a ting — circle the rim to make the glass sing.');
@@ -289,6 +294,7 @@ function keySing(id: string, note: string): void {
   const voice = new GlassVoice(noteToFreq(note));
   voice.setLevel(0.7, 0.12);
   keyVoices.set(id, { note, voice });
+  recorder.noteOn(noteToMidi(note), 0.7);
   setSinging(note, +1, 0.7);
   showLast(note.replace('#', '♯'));
   player.checkHit(note);
@@ -299,6 +305,7 @@ function keyRelease(id: string): void {
   if (!held) return;
   keyVoices.delete(id);
   held.voice.release();
+  recorder.noteOff(noteToMidi(held.note));
   setSinging(held.note, -1, 0);
 }
 
@@ -346,8 +353,37 @@ function perform(note: string, durationMs: number, velocity: number): void {
   }, Math.max(220, durationMs * 0.92));
 }
 
+/* playing a recorded take back: each note sings at its recorded level until its off */
+const takeVoices = new Map<number, GlassVoice>();
+
+function endTakeVoice(midi: number): void {
+  const voice = takeVoices.get(midi);
+  if (!voice) return;
+  takeVoices.delete(midi);
+  voice.release();
+  setSinging(midiToName(midi), -1, 0);
+}
+
 function init(): void {
   renderGlasses();
+  recorder = mountRecorder({
+    slug: 'glass-harp',
+    name: 'Glass harp',
+    prepare: () => engine.unlock(),
+    play: (e) => {
+      if (e.kind === 'on') {
+        endTakeVoice(e.note);
+        const voice = new GlassVoice(midiToFreq(e.note));
+        voice.setLevel(Math.min(1, 0.5 + e.velocity * 0.4), 0.06);
+        takeVoices.set(e.note, voice);
+        const note = midiToName(e.note);
+        setSinging(note, +1, 0.75);
+        followGlass(note);
+        showLast(note.replace('#', '♯'));
+      } else if (e.kind === 'off') endTakeVoice(e.note);
+    },
+    silence: () => [...takeVoices.keys()].forEach(endTakeVoice),
+  });
   window.setInterval(decayTick, 33);
   const NOTE_TO_KEY = invertKeymap(PIANO_KEYMAP);
   glassEls.forEach((el, note) => el.setAttribute('aria-keyshortcuts', NOTE_TO_KEY[note]?.toUpperCase() ?? ''));
