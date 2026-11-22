@@ -24,6 +24,10 @@ Six instruments, synthesized note by note in your browser. No samples, no instal
 | **Lever Harp** | Pluck, drag across to strum, keys `1`–`7`, `Q`–`U`, `I`; `Shift`+key flips a lever | Karplus–Strong plucked strings with a soundboard resonance; E♭ tuning with sharping levers |
 | **Subtractive Synth** | Tap or hold keys for chords; `A`–`K` white keys, `W E T Y U` black keys, `Z` / `X` octave | One oscillator per note through a lowpass filter and ADSR envelope, then a convolver reverb, with a live oscilloscope and spectrum |
 
+## Recording
+
+Every instrument has a **Record a take** card: record, play it back, and download it as a Standard MIDI File (format 0, 480 ticks per quarter at 120 BPM, with the General MIDI steel drums, kalimba or harp sound where one fits). The theremin is saved as one held note with pitch bend (±18 semitones, set in the file) and volume as expression. Takes are capped at 5 minutes or 20,000 events, stay in the tab, and are never uploaded.
+
 ## Learning songs
 
 The subtractive synth has no songs: its page is a written explanation of how a synth makes sound, played as you read.
@@ -53,8 +57,8 @@ npm run icons      # regenerate favicons, app icons and social cards
 ```
 src/
   data/        songs.ts (shared songbook) · instruments.ts (catalogue, structured data) · availability.ts (which songs fit which instrument) · song-pages.ts (song pages: notation, copy, JSON-LD)
-  lib/         music.ts · keyboard.ts · steelpan-layout.ts · theremin-field.ts · kalimba-layout.ts · glass-layout.ts · harp.ts (levers + geometry) · synth.ts (patches + keyboard) · audio.ts · site.ts
-  scripts/     one engine per instrument · shared/guide-player.ts (Listen / Play Along) · shared/song-ui.ts
+  lib/         music.ts · keyboard.ts · steelpan-layout.ts · theremin-field.ts · kalimba-layout.ts · glass-layout.ts · harp.ts (levers + geometry) · synth.ts (patches + keyboard) · take.ts (recording a take) · midi.ts (MIDI file writer) · audio.ts · site.ts
+  scripts/     one engine per instrument · shared/guide-player.ts (Listen / Play Along) · shared/recorder-ui.ts (Record a take) · shared/song-ui.ts
   instruments/ one component per instrument: its header, stage, coach, songs and settings
   components/  SiteNav · CoachBand · SongLibrary · SettingsCard · SongSheet (the written lesson) · InstrumentFooter
   layouts/     Base.astro — SEO, Open Graph, Twitter cards, JSON-LD, icons · InstrumentPage.astro — shared instrument page shell
