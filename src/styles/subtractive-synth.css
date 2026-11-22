@@ -137,3 +137,4 @@ h1.title span { color: var(--accent-2); }
 }
 .try .prose-try { margin: 8px 0 0; max-width: 68ch; line-height: 1.6; color: var(--ink-dim); }
 .try .prose-try b { color: var(--ink); font-weight: 600; }
+.synth-recorder { margin-top: clamp(16px, 2.4vw, 24px); }

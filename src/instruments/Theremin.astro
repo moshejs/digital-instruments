@@ -3,6 +3,7 @@
 import CoachBand from '../components/CoachBand.astro';
 import SongLibrary from '../components/SongLibrary.astro';
 import SettingsCard from '../components/SettingsCard.astro';
+import Recorder from '../components/Recorder.astro';
 import Icon from '../components/Icon.astro';
 import '../styles/instrument.css';
 import '../styles/theremin.css';
@@ -67,21 +68,24 @@ const { song } = Astro.props;
 
   <div class="lower">
     <SongLibrary />
-    <SettingsCard title="Voice" tempo={false}>
-      <div class="row"><label for="glide">Glide</label><input type="range" id="glide" min="0" max="100" value="24" /><span class="val" id="glideV">medium</span></div>
-      <div class="row"><label for="vibRate">Vibrato rate</label><input type="range" id="vibRate" min="0" max="90" value="55" /><span class="val" id="vibRateV">5.5 Hz</span></div>
-      <div class="row"><label for="vibDepth">Vibrato depth</label><input type="range" id="vibDepth" min="0" max="80" value="22" /><span class="val" id="vibDepthV">22 ¢</span></div>
-      <div class="row"><label for="timbre">Timbre</label><input type="range" id="timbre" min="0" max="100" value="42" /><span class="val" id="timbreV">voice</span></div>
-      <div class="row"><label for="reverb">Space</label><input type="range" id="reverb" min="0" max="100" value="34" /><span class="val" id="reverbV">34%</span></div>
-      <div class="row"><label for="scale">Scale assist</label>
-        <select id="scale">
-          <option value="off" selected>Off — true glide</option>
-          <option value="chromatic">Chromatic</option>
-          <option value="major">C major</option>
-          <option value="pentatonic">C pentatonic</option>
-        </select>
-      </div>
-    </SettingsCard>
+    <div class="lower-side">
+      <Recorder note="Saved as one held note with pitch bend (range ±18 semitones, set in the file) and volume as expression. Vibrato is not included; pick a sustained sound in your MIDI app." />
+      <SettingsCard title="Voice" tempo={false}>
+        <div class="row"><label for="glide">Glide</label><input type="range" id="glide" min="0" max="100" value="24" /><span class="val" id="glideV">medium</span></div>
+        <div class="row"><label for="vibRate">Vibrato rate</label><input type="range" id="vibRate" min="0" max="90" value="55" /><span class="val" id="vibRateV">5.5 Hz</span></div>
+        <div class="row"><label for="vibDepth">Vibrato depth</label><input type="range" id="vibDepth" min="0" max="80" value="22" /><span class="val" id="vibDepthV">22 ¢</span></div>
+        <div class="row"><label for="timbre">Timbre</label><input type="range" id="timbre" min="0" max="100" value="42" /><span class="val" id="timbreV">voice</span></div>
+        <div class="row"><label for="reverb">Space</label><input type="range" id="reverb" min="0" max="100" value="34" /><span class="val" id="reverbV">34%</span></div>
+        <div class="row"><label for="scale">Scale assist</label>
+          <select id="scale">
+            <option value="off" selected>Off — true glide</option>
+            <option value="chromatic">Chromatic</option>
+            <option value="major">C major</option>
+            <option value="pentatonic">C pentatonic</option>
+          </select>
+        </div>
+      </SettingsCard>
+    </div>
   </div>
 </div>
 

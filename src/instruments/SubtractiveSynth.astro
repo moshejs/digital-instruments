@@ -7,6 +7,7 @@
  * Ported from https://github.com/moshejs/subtractive-synth (MIT, © 2026 Moshe Malka).
  */
 import Icon from '../components/Icon.astro';
+import Recorder from '../components/Recorder.astro';
 import '../styles/instrument.css';
 import '../styles/subtractive-synth.css';
 
@@ -109,6 +110,10 @@ const chain = [
   </div>
   <noscript><p class="stage-foot">The synth needs JavaScript to make sound.</p></noscript>
 </section>
+
+<div class="synth-recorder">
+  <Recorder note="Notes only, at one velocity: this synth plays every key equally loud, and your patch has no General MIDI equivalent." />
+</div>
 
 <section class="lesson explain" id="explainer">
   <h2>It starts with a shape</h2>

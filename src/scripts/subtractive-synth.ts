@@ -13,6 +13,7 @@ import {
   clamp, fmtHz, fmtPct, fmtSec, hzToPos, keyMidi, layoutKeys, posToHz,
   type Patch, type PresetName, type Wave,
 } from '../lib/synth';
+import { mountRecorder } from './shared/recorder-ui';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => document.getElementById(id) as T;
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -99,13 +100,13 @@ function ensureAudio(): Graph {
   return audio;
 }
 
-function createVoice(graph: Graph, semi: number): Voice {
+function createVoice(graph: Graph, semi: number, midi = keyMidi(state.octave, semi)): Voice {
   const { ctx } = graph;
   const now = ctx.currentTime;
 
   const osc = ctx.createOscillator();
   osc.type = state.wave;
-  osc.frequency.setValueAtTime(midiToFreq(keyMidi(state.octave, semi)), now);
+  osc.frequency.setValueAtTime(midiToFreq(midi), now);
 
   const filter = ctx.createBiquadFilter();
   filter.type = 'lowpass';
@@ -152,6 +153,9 @@ function noteOn(semi: number): void {
   const graph = ensureAudio();
   if (voices.has(semi)) return; // already sounding
   voices.set(semi, createVoice(graph, semi));
+  const midi = keyMidi(state.octave, semi);
+  recordedMidi.set(semi, midi);
+  recorder.noteOn(midi, TAKE_VELOCITY);
   lightKey(semi, true);
   startDraw();
 }
@@ -161,7 +165,42 @@ function noteOff(semi: number): void {
   if (!v || !audio) return;
   voices.delete(semi);
   releaseVoice(audio, v);
+  const midi = recordedMidi.get(semi);
+  recordedMidi.delete(semi);
+  if (midi !== undefined) recorder.noteOff(midi); // the pitch it started at, even if the octave moved since
   lightKey(semi, false);
+}
+
+/* ───────────────────────────── record a take ───────────────────────────── */
+
+/** Every key sounds equally loud on this synth, so a take records one velocity. */
+const TAKE_VELOCITY = 100 / 127;
+const recordedMidi = new Map<number, number>(); // semitone offset → the MIDI note it started
+const takeVoices = new Map<number, Voice>(); // MIDI note → a voice playing a recorded take back
+
+const recorder = mountRecorder({
+  slug: 'subtractive-synth',
+  name: 'Subtractive synth',
+  prepare: () => ensureAudio(),
+  play: (e) => {
+    if (e.kind === 'on') {
+      endTakeVoice(e.note);
+      const graph = ensureAudio();
+      takeVoices.set(e.note, createVoice(graph, e.note - keyMidi(state.octave, 0), e.note));
+      lightKey(e.note - keyMidi(state.octave, 0), true);
+      startDraw();
+    } else if (e.kind === 'off') endTakeVoice(e.note);
+  },
+  silence: () => [...takeVoices.keys()].forEach(endTakeVoice),
+});
+
+function endTakeVoice(midi: number): void {
+  const v = takeVoices.get(midi);
+  if (!v || !audio) return;
+  takeVoices.delete(midi);
+  releaseVoice(audio, v);
+  const semi = midi - keyMidi(state.octave, 0);
+  if (!voices.has(semi)) lightKey(semi, false);
 }
 
 function releaseAll(): void {

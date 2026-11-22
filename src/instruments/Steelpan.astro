@@ -3,6 +3,7 @@
 import CoachBand from '../components/CoachBand.astro';
 import SongLibrary from '../components/SongLibrary.astro';
 import SettingsCard from '../components/SettingsCard.astro';
+import Recorder from '../components/Recorder.astro';
 import Icon from '../components/Icon.astro';
 import '../styles/instrument.css';
 import '../styles/steelpan.css';
@@ -44,6 +45,7 @@ const { song } = Astro.props;
 
   <div class="rail">
     <CoachBand idle="Pick a song to practise, or just strike the pan." />
+    <Recorder />
     <SongLibrary />
     <SettingsCard>
       <div class="row">

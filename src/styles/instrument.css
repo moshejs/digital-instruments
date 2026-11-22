@@ -267,6 +267,28 @@ input[type='range']::-moz-range-thumb { width: 18px; height: 18px; border-radius
 .legend .a { background: var(--accent); }
 .legend .t { background: var(--guide); }
 
+/* ---------- record a take ---------- */
+.recorder { display: grid; gap: 12px; min-width: 0; }
+.rec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.rec-clock { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 14px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+.rec-light { width: 10px; height: 10px; border-radius: 50%; background: var(--line-2); }
+.recorder[data-state='recording'] .rec-clock { color: var(--ink); }
+.recorder[data-state='recording'] .rec-light { background: var(--bad); }
+.recorder[data-state='recording'] .rec-clock::after { content: 'REC'; font-size: 12px; letter-spacing: 0.12em; color: var(--ink); }
+.recorder[data-state='playing'] .rec-light { background: var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+  .recorder[data-state='recording'] .rec-light { animation: rec-blink 1.2s ease-in-out infinite; }
+}
+@keyframes rec-blink { 50% { opacity: 0.35; } }
+.rec-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.rec-controls .btn { padding: 0 12px; }
+.rec-record .icon { color: var(--bad); }
+.rec-record[aria-pressed='true'] { filter: none; border-color: var(--bad); background: color-mix(in srgb, var(--bad) 16%, var(--panel-2)); }
+.rec-status { margin: 0; font-size: 14px; color: var(--ink); min-height: 21px; }
+.rec-note { margin: 0; font-size: 13px; color: var(--ink-dim); }
+/* the theremin and glass harp put their settings and recorder in one column beside the songs */
+.lower-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
 /* ---------- catalogue footer ---------- */
 footer.foot { margin-top: 32px; color: var(--ink-dim); font-size: 13px; text-align: center; }
 footer.foot p { margin: 0 0 8px; }

@@ -5,13 +5,16 @@
  * fraction of a second, leaving the long, pure fundamental; a short click
  * models the thumb leaving the tine, and a peaking filter the wooden box.
  */
-import { REST, noteToFreq } from '../lib/music';
+import { REST, midiToName, noteToFreq, noteToMidi } from '../lib/music';
+import { GM } from '../lib/midi';
 import { createAudioContext, makeImpulse, makeNoise } from '../lib/audio';
 import { buildTines, kalimbaNumber, KALIMBA_KEYMAP } from '../lib/kalimba-layout';
 import { invertKeymap } from '../lib/keyboard';
 import type { Song } from '../data/songs';
 import { $, capture, showLast } from './shared/song-ui';
 import { mountGuide, type GuidePlayer } from './shared/guide-player';
+import { mountRecorder } from './shared/recorder-ui';
+import type { TakeRecorder } from '../lib/take';
 
 /* ───────────────────────────── sound ───────────────────────────── */
 
@@ -21,6 +24,9 @@ const MODES = [
   { ratio: 17.55, gain: 0.05, decay: 0.08 },
 ];
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+const ringScale = (freq: number) => clamp(Math.pow(262 / freq, 0.4), 0.5, 1.3); // short tines ring for less time
+/** How long a plucked tine rings: its fundamental's decay. A recorded take uses it as the note's length. */
+const ringMs = (freq: number) => 1000 * MODES[0].decay * ringScale(freq);
 
 class KalimbaSynth {
   private ctx: AudioContext | null = null;
@@ -72,7 +78,7 @@ class KalimbaSynth {
     const ctx = this.init();
     if (ctx.state === 'suspended') void ctx.resume();
     const t0 = ctx.currentTime;
-    const ring = clamp(Math.pow(262 / freq, 0.4), 0.5, 1.3); // short tines ring for less time
+    const ring = ringScale(freq);
 
     for (const m of MODES) {
       const f = freq * m.ratio;
@@ -115,6 +121,7 @@ const NOTE_TO_KEY = invertKeymap(KALIMBA_KEYMAP);
 const tineEls = new Map<string, HTMLButtonElement>();
 const ringTimers = new Map<string, number>();
 let player: GuidePlayer | undefined;
+let recorder: TakeRecorder | undefined;
 
 /** Kalimba tablature: scale degree with a combining dot above per higher octave (5, 5̇, 5̈). */
 function tab(note: string): string {
@@ -207,6 +214,7 @@ function sound(note: string, velocity: number): void {
 function play(note: string, velocity = 1): void {
   synth.unlock();
   sound(note, velocity);
+  recorder?.noteOn(noteToMidi(note), velocity, ringMs(noteToFreq(note)));
   player?.checkHit(note);
 }
 
@@ -249,6 +257,16 @@ function initKeyboard(): void {
 
 function init(): void {
   renderTines();
+  recorder = mountRecorder({
+    slug: 'kalimba',
+    name: 'Kalimba',
+    program: GM.kalimba,
+    prepare: () => synth.unlock(),
+    play: (e) => {
+      if (e.kind === 'on') sound(midiToName(e.note), e.velocity); // a tine rings out on its own
+    },
+    silence: () => {},
+  });
   player = mountGuide(
     'kalimba',
     {

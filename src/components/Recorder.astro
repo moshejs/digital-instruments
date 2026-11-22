@@ -1,0 +1,33 @@
+---
+/**
+ * Record a take and save it as a MIDI file. Driven by scripts/shared/recorder-ui.ts
+ * through these ids; the instrument's script feeds it the notes it plays.
+ * Nothing leaves the page: the take lives in memory until the tab is closed or reloaded.
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  /** An extra line about how this instrument's take is written, when it needs saying. */
+  note?: string;
+}
+const { note } = Astro.props;
+---
+
+<section class="card recorder" id="recorder" data-state="empty" aria-labelledby="recTitle">
+  <div class="rec-head">
+    <h2 id="recTitle">Record a take</h2>
+    <span class="rec-clock" id="recClock"><i class="rec-light" aria-hidden="true"></i><span id="recTime">0:00</span></span>
+  </div>
+  <div class="rec-controls">
+    <button class="btn rec-record" id="recRecord" type="button" aria-pressed="false"><Icon name="record" /><span>Record</span></button>
+    <button class="btn" id="recStop" type="button" disabled><Icon name="stop" /><span>Stop</span></button>
+    <button class="btn" id="recPlay" type="button" aria-pressed="false" disabled><Icon name="play" /><span>Play back</span></button>
+    <button class="btn" id="recDownload" type="button" disabled><Icon name="download" /><span>Download .mid</span></button>
+    <button class="btn" id="recClear" type="button" disabled><Icon name="clear" /><span>Clear</span></button>
+  </div>
+  <p class="rec-status" id="recStatus" role="status">Press Record, then play. Up to 5 minutes per take.</p>
+  {note && <p class="rec-note">{note}</p>}
+  <p class="rec-note">The take stays in this tab: nothing is uploaded or saved, and a reload clears it.</p>
+  <p class="rec-note" id="recIos" hidden>On iPhone and iPad, Safari asks before downloading; the file goes to Files, in Downloads.</p>
+  <noscript><p class="rec-note">Recording needs JavaScript.</p></noscript>
+</section>
